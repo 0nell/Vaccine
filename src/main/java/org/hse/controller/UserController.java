@@ -19,14 +19,12 @@ public class UserController {
     UserRepository userRepository;
 
     @RequestMapping({"/", "/home"})
-    public String index()
-    {
+    public String index() {
         return "index.html";
     }
 
     @RequestMapping({"/Book"})
-    public String Book()
-    {
+    public String Book() {
         return "Book.html";
     }
 
@@ -34,6 +32,24 @@ public class UserController {
     public String signup()
     {
         return "signup.html";
+    }
+
+    @RequestMapping({"/login"})
+    public String login()
+    {
+        return "login.html";
+    }
+
+    @RequestMapping({"/stats"})
+    public String stats()
+    {
+        return "stats.html";
+    }
+
+    @RequestMapping({"/forum"})
+    public String forum()
+    {
+        return "forum.html";
     }
 
    /* // Get All Users
