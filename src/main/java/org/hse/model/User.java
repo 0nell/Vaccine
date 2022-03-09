@@ -1,63 +1,93 @@
 package org.hse.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "user_table")
+public class User
+{
     @Id
-    @GeneratedValue
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
+
+    @NotBlank
+    private String ppsn;
+
+    @Column
     @NotBlank
     private String firstName;
+
+    @Column
     @NotBlank
     private String surname;
+
+    @Column
     @NotBlank
-    private String DOB;
-    @NotBlank
-    private String PPS;
+    private Date DOB;
+
+    @Column
     @NotBlank
     private String address;
+
+    @Column
     @NotBlank
-    private String phone;
+    private String phoneNumber;
+
+    @Column
     @NotBlank
     private String email;
+
+    @Column
     @NotBlank
     private String nationality;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Appointment> appointments = new ArrayList<>();
+
     public User(){
         super();
     }
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public User(Long id, @NotBlank String firstName, @NotBlank String surname, @NotBlank String DOB,
-                @NotBlank String PPS, @NotBlank String address, @NotBlank String phone, @NotBlank String email,
-                @NotBlank String nationality) {
-        this.id = id;
+    public User(@NotBlank String firstName, @NotBlank String surname, @NotBlank Date DOB,
+                @NotBlank String ppsn, @NotBlank String address, @NotBlank String phoneNumber, @NotBlank String email,
+                @NotBlank String nationality)
+    {
         this.firstName = firstName;
         this.surname = surname;
         this.DOB = DOB;
-        this.PPS = PPS;
+        this.ppsn = ppsn;
         this.address = address;
-        this.phone = phone;
+        this.phoneNumber = phoneNumber;
         this.email = email;
         this.nationality = nationality;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getPpsn() {
+        return ppsn;
+    }
+
+    public void setPpsn(String ppsn) {
+        this.ppsn = ppsn;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String first_name) {
-        this.firstName = first_name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getSurname() {
@@ -68,20 +98,12 @@ public class User {
         this.surname = surname;
     }
 
-    public String getDOB() {
+    public Date getDOB() {
         return DOB;
     }
 
-    public void setDOB(String DOB) {
+    public void setDOB(Date DOB) {
         this.DOB = DOB;
-    }
-
-    public String getPPS() {
-        return PPS;
-    }
-
-    public void setPPS(String PPS) {
-        this.PPS = PPS;
     }
 
     public String getAddress() {
@@ -92,12 +114,12 @@ public class User {
         this.address = address;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getEmail() {
@@ -112,7 +134,15 @@ public class User {
         return nationality;
     }
 
-    public void setNationality(String ntionality) {
-        this.nationality = ntionality;
+    public void setNationality(String nationality) {
+        this.nationality = nationality;
+    }
+
+    public List<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void setAppointments(List<Appointment> appointments) {
+        this.appointments = appointments;
     }
 }
