@@ -19,10 +19,21 @@ public class UserController {
     UserRepository userRepository;
 
     @RequestMapping({"/", "/home"})
-    public String getHome()
+    public String index()
     {
-        System.out.println("yep");
         return "index.html";
+    }
+
+    @RequestMapping({"/Book"})
+    public String Book()
+    {
+        return "Book.html";
+    }
+
+    @RequestMapping({"/signup"})
+    public String signup()
+    {
+        return "signup.html";
     }
 
    /* // Get All Users
