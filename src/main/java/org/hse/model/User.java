@@ -5,6 +5,9 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.hse.model.UserType;
+
+
 
 @Entity
 @Table(name = "user_table")
@@ -12,38 +15,36 @@ public class User
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    private long id;
 
-    @NotBlank
     private String ppsn;
 
     @Column
-    @NotBlank
     private String firstName;
 
     @Column
-    @NotBlank
     private String surname;
 
     @Column
-    @NotBlank
-    private Date DOB;
+    private Date dob;
 
     @Column
-    @NotBlank
     private String address;
 
     @Column
-    @NotBlank
     private String phoneNumber;
 
     @Column
-    @NotBlank
     private String email;
 
     @Column
-    @NotBlank
     private String nationality;
+
+    @Column
+    private UserType userType;
+
+    @Column
+    private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Appointment> appointments = new ArrayList<>();
@@ -52,25 +53,38 @@ public class User
         super();
     }
 
-    public User(@NotBlank String firstName, @NotBlank String surname, @NotBlank Date DOB,
+    /*public User(@NotBlank String firstName, @NotBlank String surname, @NotBlank Date DOB,
                 @NotBlank String ppsn, @NotBlank String address, @NotBlank String phoneNumber, @NotBlank String email,
-                @NotBlank String nationality)
+                @NotBlank String nationality)*/
+
+    public User(UserType userType) {
+        this.userType = userType;
+    }
+
+    public User(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    public User(String firstName,String surname,Date dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType)
     {
         this.firstName = firstName;
         this.surname = surname;
-        this.DOB = DOB;
+        this.dob = dob;
         this.ppsn = ppsn;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.nationality = nationality;
+        this.password = password;
+        this.userType = userType;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -98,12 +112,12 @@ public class User
         this.surname = surname;
     }
 
-    public Date getDOB() {
-        return DOB;
+    public Date getDob() {
+        return dob;
     }
 
-    public void setDOB(Date DOB) {
-        this.DOB = DOB;
+    public void setDob(Date dob) {
+        this.dob = dob;
     }
 
     public String getAddress() {
@@ -144,5 +158,21 @@ public class User
 
     public void setAppointments(List<Appointment> appointments) {
         this.appointments = appointments;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
     }
 }
