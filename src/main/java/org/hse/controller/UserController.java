@@ -1,22 +1,31 @@
-package org.example.controller;
+package org.hse.controller;
 
-import org.example.exception.UserNotFoundException;
-import org.example.model.User;
-import org.example.repository.UserRepository;
+import org.hse.exception.UserNotFoundException;
+import org.hse.model.User;
+import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
 
-@RestController
+@Controller
 public class UserController {
 
     @Autowired
     UserRepository userRepository;
 
-    // Get All Users
+    @RequestMapping({"/", "/home"})
+    public String getHome()
+    {
+        System.out.println("yep");
+        return "index.html";
+    }
+
+   /* // Get All Users
     @GetMapping("/users")
     public List<User> getAllUsers(){
         return userRepository.findAll();
@@ -55,5 +64,5 @@ public class UserController {
                 .orElseThrow(() -> new UserNotFoundException(userId));
         userRepository.delete(user);
         return ResponseEntity.ok().build();
-    }
+    }*/
 }

@@ -1,4 +1,4 @@
-package org.example.exception;
+package org.hse.exception;
 public class UserNotFoundException extends Exception {
 private Long user_id;
 public UserNotFoundException(Long user_id) {

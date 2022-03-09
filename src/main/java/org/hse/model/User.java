@@ -1,4 +1,4 @@
-package org.example.model;
+package org.hse.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
