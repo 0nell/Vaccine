@@ -2,6 +2,7 @@ package org.hse.controller;
 
 import org.hse.exception.UserNotFoundException;
 import org.hse.model.User;
+import org.hse.model.UserType;
 import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -50,6 +53,24 @@ public class UserController {
     public String forum()
     {
         return "forum.html";
+    }
+
+    @PostMapping({"/signup"})
+    public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException {
+        boolean emailExists = userRepository.findByEmail(user.getEmail()).isEmpty();
+        boolean ppsExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
+        if(emailExists && ppsExists){
+            user.setUserType(UserType.USER);
+            //userRepository.save(user);
+            System.out.println(user.getEmail() + ", " + user.getUserType());
+        }
+        response.sendRedirect("/");
+    }
+
+    @PostMapping({"/login"})
+    public void login_submit(User user, HttpServletResponse response) throws IOException {
+        System.out.println(user.getEmail());
+        response.sendRedirect("/");
     }
 
    /* // Get All Users
