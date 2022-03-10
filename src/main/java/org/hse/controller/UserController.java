@@ -1,18 +1,15 @@
 package org.hse.controller;
 
-import org.hse.exception.UserNotFoundException;
+import org.hse.model.Appointment;
 import org.hse.model.User;
 import org.hse.model.UserType;
 import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,14 +23,14 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
-    private long currentUserID = 0;
+    private long currentUserID = -1;
 
     @RequestMapping({"/", "/home"})
     public String index() throws ParseException {
         return "index.html";
     }
 
-    @RequestMapping({"/Book"})
+    @RequestMapping({"/book"})
     public String Book() {
         return "Book.html";
     }
@@ -62,6 +59,39 @@ public class UserController {
         return "forum.html";
     }
 
+    @RequestMapping({"/user"})
+    public String user(Model model, HttpServletResponse response) throws IOException {
+        if(currentUserID == -1) {
+            response.sendRedirect("/");
+            return "index.html";
+        }
+        else {
+            List<Appointment> userAppointments = userRepository.getById(currentUserID).getAppointments();
+            String lastActivity = "";
+            int dose = 0;
+
+            if (userAppointments.isEmpty())
+                lastActivity = "No recent Activity";
+            else if (userAppointments.size() == 1) {
+                if (userAppointments.get(0).isReceived()) {
+                    lastActivity = "First Dose has been received, awaiting second dose";
+                    dose = 2;
+                }
+                else {
+                    lastActivity = "First Dose has been booked";
+                    dose = 1;
+                }
+            } else if (userAppointments.get(1).isReceived()) {
+                lastActivity = "You are fully vaccinated";
+                dose = 3;
+            }
+
+            model.addAttribute("lastActivity", lastActivity);
+            model.addAttribute("dose", dose);
+            return "User-Profile.html";
+        }
+    }
+
     @PostMapping({"/signup"})
     public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException, ParseException {
         boolean emailExists = userRepository.findByEmail(user.getEmail()).isEmpty();
@@ -74,7 +104,7 @@ public class UserController {
             currentUserID = user.getId();
             userRepository.save(user);
             System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
-            response.sendRedirect("/");
+            response.sendRedirect("/user");
         }
         else {
             System.out.println("email: " + emailExists + "\npps: " + ppsExists + "\nage: " + ageRequirement);
@@ -98,7 +128,7 @@ public class UserController {
             if(userList.get(0).getPassword().equals(user.getPassword())) {
                 currentUserID = userList.get(0).getId();
                 System.out.println("You logged in!!");
-                response.sendRedirect("/");
+                response.sendRedirect("/user");
             }
             else {
                 System.out.println("Password wrong");
