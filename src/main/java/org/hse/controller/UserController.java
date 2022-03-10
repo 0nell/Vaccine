@@ -1,9 +1,7 @@
 package org.hse.controller;
 
 import org.hse.model.*;
-import org.hse.repository.AnswerRepository;
-import org.hse.repository.QuestionRepository;
-import org.hse.repository.UserRepository;
+import org.hse.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -30,18 +28,26 @@ public class UserController {
     QuestionRepository questionRepository;
     @Autowired
     AnswerRepository answerRepository;
+    @Autowired
+    CentreRepository centreRepository;
+    @Autowired
+    AppointmentRepository appointmentRepository;
+
     private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
-    public void initialiseDatabasevalues() {
-        if(userRepository.count() >= 2)
+    public void initialiseDatabaseValues() {
+        if(userRepository.count() == 0)
         {
-            System.out.println("full");
+            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,"iamadmin",UserType.ADMIN));
         }
-        else
+        if(centreRepository.count() == 0)
         {
-            userRepository.save(new User("em1","pass1"));
-            userRepository.save(new User("em","pass"));
+            centreRepository.save(new Centre("HSE clinic North","1 Coolock road","84738291"));
+            centreRepository.save(new Centre("HSE clinic South","1 Stillorgan road","84738292"));
+            centreRepository.save(new Centre("HSE clinic East","1 Port road","84738293"));
+            centreRepository.save(new Centre("HSE clinic West","1 Lucan road","84738294"));
+            centreRepository.save(new Centre("HSE clinic Central","1 Connolly Street","84738295"));
         }
     }
 

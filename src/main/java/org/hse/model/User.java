@@ -64,7 +64,8 @@ public class User
         this.password = password;
     }
 
-    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType) throws ParseException {
+    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType)
+    {
         this.firstName = firstName;
         this.surname = surname;
         this.dob = dob;
