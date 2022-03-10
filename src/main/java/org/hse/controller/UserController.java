@@ -10,19 +10,26 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class UserController {
 
     @Autowired
     UserRepository userRepository;
+    private long currentUserID = 0;
 
     @RequestMapping({"/", "/home"})
-    public String index() {
+    public String index() throws ParseException {
         return "index.html";
     }
 
@@ -56,21 +63,54 @@ public class UserController {
     }
 
     @PostMapping({"/signup"})
-    public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException {
+    public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException, ParseException {
         boolean emailExists = userRepository.findByEmail(user.getEmail()).isEmpty();
         boolean ppsExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
-        if(emailExists && ppsExists){
+        Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
+        boolean ageRequirement = isOver18(d);
+
+        if(emailExists && ppsExists && ageRequirement){
             user.setUserType(UserType.USER);
-            //userRepository.save(user);
-            System.out.println(user.getEmail() + ", " + user.getUserType());
+            currentUserID = user.getId();
+            userRepository.save(user);
+            System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
+            response.sendRedirect("/");
         }
-        response.sendRedirect("/");
+        else {
+            System.out.println("email: " + emailExists + "\npps: " + ppsExists + "\nage: " + ageRequirement);
+            response.sendRedirect("/signup");
+        }
+    }
+
+    public boolean isOver18(Date dob){
+        Date today = Calendar.getInstance().getTime();
+        long d1 = TimeUnit.DAYS.convert(today.getTime(), TimeUnit.MILLISECONDS);
+        long d2 = TimeUnit.DAYS.convert(dob.getTime(), TimeUnit.MILLISECONDS);
+        long diff = d1 - d2;
+        diff = diff/360;
+        return diff > 17;
     }
 
     @PostMapping({"/login"})
     public void login_submit(User user, HttpServletResponse response) throws IOException {
-        System.out.println(user.getEmail());
-        response.sendRedirect("/");
+        List<User> userList = userRepository.findByEmail(user.getEmail());
+        if(!userList.isEmpty()){
+            if(userList.get(0).getPassword().equals(user.getPassword())) {
+                currentUserID = userList.get(0).getId();
+                System.out.println("You logged in!!");
+                response.sendRedirect("/");
+            }
+            else {
+                System.out.println("Password wrong");
+                response.sendRedirect("/login");
+            }
+
+        }
+        else {
+            System.out.println("Email wrong");
+            response.sendRedirect("/login");
+        }
+
     }
 
    /* // Get All Users
