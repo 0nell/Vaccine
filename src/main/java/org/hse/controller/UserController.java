@@ -1,8 +1,8 @@
 package org.hse.controller;
 
-import org.hse.model.Appointment;
-import org.hse.model.User;
-import org.hse.model.UserType;
+import org.hse.model.*;
+import org.hse.repository.AnswerRepository;
+import org.hse.repository.QuestionRepository;
 import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,6 +23,10 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    QuestionRepository questionRepository;
+    @Autowired
+    AnswerRepository answerRepository;
     private long currentUserID = -1;
 
     @RequestMapping({"/", "/home"})
@@ -54,8 +58,10 @@ public class UserController {
     }
 
     @RequestMapping({"/forum"})
-    public String forum()
+    public String forum(Model model)
     {
+        model.addAttribute("unanswered", questionRepository.findByAnswerIsNull());
+        model.addAttribute("answered", questionRepository.findByAnswerIsNotNull());
         return "forum.html";
     }
 
@@ -141,6 +147,29 @@ public class UserController {
             response.sendRedirect("/login");
         }
 
+    }
+
+    @PostMapping({"/forum/question"})
+    public void ask_question(String title, String question, HttpServletResponse response) throws IOException {
+        String name = "Anonymous User";
+        if(currentUserID != -1)
+            name  = userRepository.findById(currentUserID).getFirstName() + " " + userRepository.findById(currentUserID).getSurname();
+
+        Question newQuestion = new Question(title, question, name);
+        questionRepository.save(newQuestion);
+        response.sendRedirect("/forum");
+    }
+
+    @PostMapping({"/forum/answer"})
+    public void answer_question(String answer, long questionId, HttpServletResponse response) throws IOException {
+        String name = "Anonymous User";
+        if(currentUserID != -1)
+            name  = userRepository.findById(currentUserID).getFirstName() + " " + userRepository.findById(currentUserID).getSurname();
+        System.out.println(questionId);
+        Question question = questionRepository.findById(questionId);
+        Answer newAnswer = new Answer(answer, name, question);
+        answerRepository.save(newAnswer);
+        response.sendRedirect("/forum");
     }
 
    /* // Get All Users

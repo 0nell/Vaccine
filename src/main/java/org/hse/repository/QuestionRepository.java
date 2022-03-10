@@ -3,6 +3,10 @@ package org.hse.repository;
 import org.hse.model.Question;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
+import java.util.List;
 @Repository
-public interface QuestionRepository extends JpaRepository<Question, Long> { }
+public interface QuestionRepository extends JpaRepository<Question, Long> {
+    List<Question> findByAnswerIsNull();
+    List<Question> findByAnswerIsNotNull();
+    Question findById(long id);
+}
