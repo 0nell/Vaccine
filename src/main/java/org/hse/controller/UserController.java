@@ -71,10 +71,12 @@ public class UserController {
         if(emailExists && ppsExists && ageRequirement){
             user.setUserType(UserType.USER);
             currentUserID = user.getId();
-            //userRepository.save(user);
-            System.out.println(user.getEmail() + ", " + user.getUserType() + ", " + user.getDob());
+            userRepository.save(user);
+            System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
             response.sendRedirect("/");
         }
+        else
+            System.out.println("email: " + emailExists + "\npps: " + ppsExists + "\nage: " + ageRequirement);
     }
 
     public boolean isOver18(Date dob){
@@ -94,7 +96,11 @@ public class UserController {
                 currentUserID = userList.get(0).getId();
                 System.out.println("You logged in!!");
             }
+            else
+                System.out.println("Password wrong");
         }
+        else
+            System.out.println("Email wrong");
         response.sendRedirect("/");
     }
 
