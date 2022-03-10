@@ -13,10 +13,6 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    //@ManyToOne                //if we have a centres table /////not needed imo
-    @NotBlank
-    private int centreNum;
-
     @Column
     @NotBlank
     private Date appointmentDateTime;
@@ -33,21 +29,25 @@ public class Appointment {
     @NotBlank
     private VaccineType vaccineType;
 
-    @NotBlank
+    @NotBlank       //user can have many appts
     @ManyToOne
     private User user;
+
+    @NotBlank       //centre can have many apts
+    @ManyToOne
+    private Centre centre;
 
     public Appointment() {
         super();
     }
 
-    public Appointment(@NotBlank int centreNum, @NotBlank Date appointmentDateTime, @NotBlank boolean firstDose, @NotBlank User user, @NotBlank VaccineType vaccineType) {
-        this.centreNum = centreNum;
+    public Appointment(@NotBlank Date appointmentDateTime, @NotBlank boolean firstDose, @NotBlank User user, @NotBlank VaccineType vaccineType,@NotBlank Centre centre) {
         this.appointmentDateTime = appointmentDateTime;
         this.firstDose = firstDose;
         this.user = user;
         this.vaccineType = vaccineType;
-        this.received = false;
+        this.received = false;              //obviously hasnt recieved dose if appointment just being made
+        this.centre = centre;
     }
 
     public long getId() {
@@ -56,14 +56,6 @@ public class Appointment {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public int getCentreNum() {
-        return centreNum;
-    }
-
-    public void setCentreNum(int centreNum) {
-        this.centreNum = centreNum;
     }
 
     public Date getAppointmentDateTime() {
@@ -104,5 +96,13 @@ public class Appointment {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Centre getCentre() {
+        return centre;
+    }
+
+    public void setCentre(Centre centre) {
+        this.centre = centre;
     }
 }
