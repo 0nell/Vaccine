@@ -32,7 +32,6 @@ public class UserController {
     CentreRepository centreRepository;
     @Autowired
     AppointmentRepository appointmentRepository;
-
     private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
@@ -53,11 +52,15 @@ public class UserController {
 
     @RequestMapping({"/", "/home"})
     public String index() throws ParseException {
+        if(currentUserID != -1){
+            return "User-Profile.html";
+        }
         return "index.html";
     }
 
     @RequestMapping({"/book"})
-    public String Book() {
+    public String Book(Model model) {
+        model.addAttribute("centres", centreRepository.findAll());
         return "Book.html";
     }
 
@@ -96,46 +99,48 @@ public class UserController {
         else {
             List<Appointment> userAppointments = userRepository.getById(currentUserID).getAppointments();
             String lastActivity = "";
-            int dose = 0;
+            String bookMessage = "";
 
-            if (userAppointments.isEmpty())
+            if (userAppointments.isEmpty()) {
                 lastActivity = "No recent Activity";
+                bookMessage = "Book your first dose now";
+            }
             else if (userAppointments.size() == 1) {
                 if (userAppointments.get(0).isReceived()) {
                     lastActivity = "First Dose has been received, awaiting second dose";
-                    dose = 2;
+                    bookMessage = "Book your second dose now";
                 }
                 else {
                     lastActivity = "First Dose has been booked";
-                    dose = 1;
+                    bookMessage = "You can book your second dose after receiving first dose";
                 }
             } else if (userAppointments.get(1).isReceived()) {
                 lastActivity = "You are fully vaccinated";
-                dose = 3;
+                bookMessage = "You have no more vaccines to book";
             }
 
             model.addAttribute("lastActivity", lastActivity);
-            model.addAttribute("dose", dose);
+            model.addAttribute("bookMessage", bookMessage);
+
             return "User-Profile.html";
         }
     }
 
     @PostMapping({"/signup"})
     public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException, ParseException {
-        boolean emailExists = userRepository.findByEmail(user.getEmail()).isEmpty();
-        boolean ppsExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
+        boolean emailNotExists = userRepository.findByEmail(user.getEmail()).isEmpty();
+        boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
         Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
         boolean ageRequirement = isOver18(d);
 
-        if(emailExists && ppsExists && ageRequirement){
+        if(emailNotExists && ppsNotExists && ageRequirement){
             user.setUserType(UserType.USER);
-            currentUserID = user.getId();
-            userRepository.save(user);
+            currentUserID = userRepository.save(user).getId();
             System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
             response.sendRedirect("/user");
         }
         else {
-            System.out.println("email: " + emailExists + "\npps: " + ppsExists + "\nage: " + ageRequirement);
+            System.out.println("email: " + emailNotExists + "\npps: " + ppsNotExists + "\nage: " + ageRequirement);
             response.sendRedirect("/signup");
         }
     }
@@ -192,6 +197,19 @@ public class UserController {
         Answer newAnswer = new Answer(answer, name, question);
         answerRepository.save(newAnswer);
         response.sendRedirect("/forum");
+    }
+
+    @PostMapping({"/book"})
+    public void book_submit(String date, long centreId, HttpServletResponse response) throws IOException {
+        User user = userRepository.getById(currentUserID);
+        Centre centre = centreRepository.getById(centreId);
+        boolean firstDose = user.getAppointments().isEmpty();
+        Appointment appointment = new Appointment(date, firstDose, user, centre);
+        System.out.println("User:\n" + user.getEmail() + ", " + user.getPassword() + ", " + user.getFirstName());
+        System.out.println("\nAppointment:\n" + user.getAppointments().get(0).getCentre().getName());
+        appointmentRepository.save(appointment);
+        userRepository.save(user);
+        response.sendRedirect("/user");
     }
 
    /* // Get All Users
