@@ -51,15 +51,22 @@ public class UserController {
     }
 
     @RequestMapping({"/", "/home"})
-    public String index() throws ParseException {
-        if(currentUserID != -1){
-            return "User-Profile.html";
+    public String index(HttpServletResponse response) throws ParseException, IOException {
+        if(userRepository.findById(currentUserID) != null){
+            response.sendRedirect("/user");
         }
         return "index.html";
     }
 
     @RequestMapping({"/book"})
-    public String Book(Model model) {
+    public String Book(Model model, HttpServletResponse response) throws IOException {
+        if(userRepository.findById(currentUserID) == null){
+            response.sendRedirect("/");
+            return "index.html";
+        }
+        else if(!userRepository.findById(currentUserID).getAppointments().isEmpty()){
+            response.sendRedirect("/user");
+        }
         model.addAttribute("centres", centreRepository.findAll());
         return "Book.html";
     }
@@ -92,7 +99,7 @@ public class UserController {
 
     @RequestMapping({"/user"})
     public String user(Model model, HttpServletResponse response) throws IOException {
-        if(currentUserID == -1) {
+        if(userRepository.findById(currentUserID) == null) {
             response.sendRedirect("/");
             return "index.html";
         }
