@@ -1,12 +1,10 @@
 package org.hse.model;
 
-import javax.validation.constraints.NotBlank;
 import javax.persistence.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.hse.model.UserType;
-
 
 @Entity
 @Table(name = "user_table")
@@ -26,7 +24,7 @@ public class User
     private String surname;
 
     @Column
-    private Date dob;
+    private String dob;
 
     @Column
     private String address;
@@ -66,8 +64,7 @@ public class User
         this.password = password;
     }
 
-    public User(String firstName,String surname,Date dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType)
-    {
+    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType) throws ParseException {
         this.firstName = firstName;
         this.surname = surname;
         this.dob = dob;
@@ -112,11 +109,11 @@ public class User
         this.surname = surname;
     }
 
-    public Date getDob() {
+    public String getDob() {
         return dob;
     }
 
-    public void setDob(Date dob) {
+    public void setDob(String dob) {
         this.dob = dob;
     }
 
