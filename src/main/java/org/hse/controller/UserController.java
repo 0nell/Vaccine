@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -75,8 +76,10 @@ public class UserController {
             System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
             response.sendRedirect("/");
         }
-        else
+        else {
             System.out.println("email: " + emailExists + "\npps: " + ppsExists + "\nage: " + ageRequirement);
+            response.sendRedirect("/signup");
+        }
     }
 
     public boolean isOver18(Date dob){
@@ -95,13 +98,19 @@ public class UserController {
             if(userList.get(0).getPassword().equals(user.getPassword())) {
                 currentUserID = userList.get(0).getId();
                 System.out.println("You logged in!!");
+                response.sendRedirect("/");
             }
-            else
+            else {
                 System.out.println("Password wrong");
+                response.sendRedirect("/login");
+            }
+
         }
-        else
+        else {
             System.out.println("Email wrong");
-        response.sendRedirect("/");
+            response.sendRedirect("/login");
+        }
+
     }
 
    /* // Get All Users
