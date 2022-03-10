@@ -5,6 +5,8 @@ import org.hse.model.User;
 import org.hse.model.UserType;
 import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +29,19 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
     private long currentUserID = 0;
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void initialiseDatabasevalues() {
+        if(userRepository.count() >= 2)
+        {
+            System.out.println("full");
+        }
+        else
+        {
+            userRepository.save(new User("em1","pass1"));
+            userRepository.save(new User("em","pass"));
+        }
+    }
 
     @RequestMapping({"/", "/home"})
     public String index() throws ParseException {

@@ -1,0 +1,2 @@
+    INSERT INTO user_table(id, address, dob, email, first_name, nationality, password, phone_number,ppsn,surname, user_type)
+    VALUES (0, null,null,'admin@penworld.ie',null,null, 'hunter2',null,null,null, 1);
