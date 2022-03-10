@@ -8,7 +8,6 @@ import java.util.List;
 import org.hse.model.UserType;
 
 
-
 @Entity
 @Table(name = "user_table")
 public class User
@@ -17,6 +16,7 @@ public class User
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column
     private String ppsn;
 
     @Column
