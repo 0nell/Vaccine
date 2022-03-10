@@ -1,7 +1,6 @@
 package org.hse.model;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "question_table")
@@ -11,22 +10,32 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    @Column
+    private String title;
+
     @Column
     private String message;
 
-    @NotBlank
-    @ManyToOne
-    private User user;
+    @Column
+    private String user;
 
     @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
     private Answer answer;
 
     public Question() {}
 
-    public Question(String message, User user, Answer answer) {
+    public Question(String title, String message, String user) {
+        this.title = title;
         this.message = message;
         this.user = user;
-        this.answer = answer;
     }
 
     public long getId() {
@@ -45,11 +54,11 @@ public class Question {
         this.message = message;
     }
 
-    public User getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(String user) {
         this.user = user;
     }
 

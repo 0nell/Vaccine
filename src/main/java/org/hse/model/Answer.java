@@ -1,7 +1,6 @@
 package org.hse.model;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "answer_table")
@@ -14,16 +13,15 @@ public class Answer {
     @Column
     private String message;
 
-    @NotBlank
-    @ManyToOne
-    private User user;
+    @Column
+    private String user;
 
     @OneToOne
     private Question question;
 
     public Answer() {}
 
-    public Answer(String message, User user, Question question) {
+    public Answer(String message, String user, Question question) {
         this.message = message;
         this.user = user;
         this.question= question;
@@ -45,11 +43,11 @@ public class Answer {
         this.message = message;
     }
 
-    public User getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(String user) {
         this.user = user;
     }
 

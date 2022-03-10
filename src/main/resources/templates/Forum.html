@@ -9,10 +9,11 @@
     <title>Forum</title>
     <link rel="stylesheet" href="css/nicepage.css" media="screen">
 <link rel="stylesheet" href="css/Forum.css" media="screen">
-    <script class="u-script" type="text/javascript" src="javaScript/jquery.js" defer=""></script>
-    <script class="u-script" type="text/javascript" src="javaScript/nicepage.js" defer=""></script>
+      <script class="u-script" type="text/javascript" src="javaScript/jquery.js" defer=""></script>
+      <script class="u-script" type="text/javascript" src="javaScript/nicepage.js" defer=""></script>
     <meta name="generator" content="Nicepage 4.6.5, nicepage.com">
     <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
+    
     
     
     
@@ -29,7 +30,7 @@
     <meta property="og:type" content="website">
   </head>
   <body class="u-body u-xl-mode"><header class="u-clearfix u-custom-color-3 u-header u-header" id="sec-7124"><div class="u-clearfix u-sheet u-sheet-1">
-        <a href="/" class="u-image u-logo u-image-1" data-image-width="446" data-image-height="128">
+        <a href="https://nicepage.com" class="u-image u-logo u-image-1" data-image-width="446" data-image-height="128">
           <img src="images/hse-logo.png" class="u-logo-image u-logo-image-1">
         </a>
         <nav class="u-menu u-menu-dropdown u-offcanvas u-menu-1">
@@ -58,7 +59,7 @@
           </div>
         </nav>
       </div></header>
-    <section class="u-clearfix u-section-1" id="sec-e6c7">
+    <section th:each="question: ${answered}" class="u-clearfix u-section-1" th:id="|${question.id}sec-e6c7|">
       <div class="u-clearfix u-sheet u-sheet-1">
         <div class="u-align-left u-border-3 u-border-color-2-base u-expanded-width u-left-0 u-shape u-shape-1"></div>
         <div class="u-clearfix u-layout-wrap u-layout-wrap-1">
@@ -66,44 +67,94 @@
             <div class="u-layout-row">
               <div class="u-align-center-sm u-align-center-xs u-align-left-lg u-align-left-md u-align-left-xl u-container-style u-layout-cell u-left-cell u-size-43 u-layout-cell-1">
                 <div class="u-container-layout u-valign-middle u-container-layout-1">
-                  <h3 class="u-text u-text-default u-text-1">Want to learn more?</h3>
-                  <p class="u-text u-text-2">Sample text. Click to select the text box. Click again or double click to start editing the text.</p>
+                  <h3 class="u-text u-text-default u-text-1" th:text="${question.title}"></h3>
+                  <p class="u-text u-text-2"></p>
                 </div>
               </div>
               <div class="u-align-left u-container-style u-layout-cell u-right-cell u-size-17 u-layout-cell-2">
-                <div class="u-container-layout u-valign-middle u-container-layout-2">
-                  <a href="#" class="u-black u-btn u-button-style u-btn-1">Answers</a>
-                </div>
+                <div class="u-container-layout u-container-layout-2"></div>
               </div>
             </div>
           </div>
         </div>
-        <h3 class="u-text u-text-default u-text-3">Answer</h3>
+        <p class="u-text u-text-default u-text-3"  th:text="${question.answer.message}"></p>
       </div>
     </section>
-    <section class="u-clearfix u-section-2" id="carousel_39cc">
+  <section th:each="question: ${unanswered}" class="u-clearfix u-section-2" th:id="|${question.id}sec-e6c7|">
       <div class="u-clearfix u-sheet u-sheet-1">
-        <div class="u-align-left u-border-3 u-border-color-2-base u-expanded-width u-left-0 u-shape u-shape-1"></div>
-        <div class="u-clearfix u-layout-wrap u-layout-wrap-1">
-          <div class="u-layout">
-            <div class="u-layout-row">
-              <div class="u-align-center-sm u-align-center-xs u-align-left-lg u-align-left-md u-align-left-xl u-container-style u-layout-cell u-left-cell u-size-43 u-layout-cell-1">
-                <div class="u-container-layout u-valign-middle u-container-layout-1">
-                  <h3 class="u-text u-text-default u-text-1">Want to learn more?</h3>
-                  <p class="u-text u-text-2">Sample text. Click to select the text box. Click again or double click to start editing the text.</p>
-                </div>
+          <div class="u-align-left u-border-3 u-border-color-2-base u-expanded-width u-left-0 u-shape u-shape-1"></div>
+          <div class="u-clearfix u-layout-wrap u-layout-wrap-1">
+              <div class="u-layout">
+                  <div class="u-layout-row">
+                      <div class="u-align-center-sm u-align-center-xs u-align-left-lg u-align-left-md u-align-left-xl u-container-style u-layout-cell u-left-cell u-size-43 u-layout-cell-1">
+                          <div class="u-container-layout u-valign-middle u-container-layout-1">
+                              <h3 class="u-text u-text-default u-text-1" th:text="${question.title}"></h3>
+                              <p class="u-text u-text-2" th:text="${question.message}"></p>
+                          </div>
+                      </div>
+                      <div class="u-align-left u-container-style u-layout-cell u-right-cell u-size-17 u-layout-cell-2">
+                          <div class="u-container-layout u-container-layout-2"></div>
+                      </div>
+                  </div>
               </div>
-              <div class="u-align-left u-container-style u-layout-cell u-right-cell u-size-17 u-layout-cell-2">
-                <div class="u-container-layout u-valign-middle u-container-layout-2">
-                  <a href="#" class="u-black u-btn u-button-style u-btn-1">Answers</a>
-                </div>
-              </div>
-            </div>
           </div>
-        </div>
-        <h3 class="u-text u-text-default u-text-3">Answer</h3>
+          <div class="u-expanded-width u-form u-form-1">
+              <form action="/forum/answer" method="POST" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="custom" name="form" style="padding: 10px;">
+
+                  <div class="u-form-group u-form-message">
+                      <label for="message-6793" class="u-label">Answer</label>
+                      <input  type="hidden"  name="questionId" th:value="${question.id}">
+                      <textarea placeholder="Answer Question" rows="4" cols="50" id="message-6793" name="answer" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required=""></textarea>
+                  </div>
+                  <div class="u-align-left u-form-group u-form-submit">
+                      <input type="submit" value="submit" class="u-btn u-btn-submit">
+                  </div>
+                  <div class="u-form-send-message u-form-send-success"> Thank you! Your message has been sent. </div>
+                  <div class="u-form-send-error u-form-send-message"> Unable to send your message. Please fix errors then try again. </div>
+                  <input type="hidden" value="" name="recaptchaResponse">
+              </form>
+          </div>
       </div>
-    </section>
+  </section>
+  <section class="u-clearfix u-section-3" id="carousel_23bc">
+      <div class="u-clearfix u-sheet u-sheet-1">
+          <div class="u-align-left u-border-3 u-border-color-2-base u-expanded-width u-left-0 u-shape u-shape-1"></div>
+          <div class="u-clearfix u-layout-wrap u-layout-wrap-1">
+              <div class="u-layout">
+                  <div class="u-layout-row">
+                      <div class="u-align-left u-container-style u-layout-cell u-left-cell u-size-43 u-layout-cell-1">
+                          <div class="u-container-layout u-container-layout-1">
+                              <h3 class="u-text u-text-default u-text-1">Want to learn more?</h3>
+                              <div class="u-form u-form-1">
+                                  <form action="/forum/question" method="POST" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="custom" name="form" style="padding: 10px;">
+
+
+                                      <div class="u-form-group u-form-group-1">
+                                          <label for="text-ae9d" class="u-label">Title</label>
+                                          <input type="text" placeholder="Enter Question Title" id="text-ae9d" name="title" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white">
+                                      </div>
+                                      <div class="u-form-group u-form-message">
+                                          <label for="message-6793" class="u-label">Question</label>
+                                          <textarea placeholder="Enter your question" rows="4" cols="50" id="message-6793" name="question" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required=""></textarea>
+                                      </div>
+                                      <div class="u-align-left u-form-group u-form-submit">
+                                          <input type="submit" value="submit" class="u-btn u-btn-submit">
+                                      </div>
+                                      <div class="u-form-send-message u-form-send-success"> Thank you! Your message has been sent. </div>
+                                      <div class="u-form-send-error u-form-send-message"> Unable to send your message. Please fix errors then try again. </div>
+                                      <input type="hidden" value="" name="recaptchaResponse">
+                                  </form>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="u-align-left u-container-style u-layout-cell u-right-cell u-size-17 u-layout-cell-2">
+                          <div class="u-container-layout u-container-layout-2"></div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
     
     
     

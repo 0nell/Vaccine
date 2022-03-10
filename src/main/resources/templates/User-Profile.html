@@ -87,14 +87,18 @@
               <div class="u-align-center u-container-style u-custom-color-2 u-layout-cell u-size-20 u-layout-cell-1">
                 <div class="u-container-layout u-valign-top u-container-layout-1">
                   <h2 class="u-custom-font u-text u-text-1">Vaccine Booking</h2>
-                  <p class="u-text u-text-2">Book your first dose now</p>
-                  <a href="https://nicepage.com/k/blank-html-templates" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-4-dark-1 u-radius-50 u-text-white u-btn-1">Sign up</a>
+                  <p class="u-text u-text-2" th:if="0 == ${dose}">Book your first dose now</p>
+                  <p class="u-text u-text-2" th:if="1 == ${dose}">You can book your second dose after receiving first dose</p>
+                  <p class="u-text u-text-2" th:if="2 == ${dose}">Book your second dose now</p>
+                  <p class="u-text u-text-2" th:if="3 == ${dose}">You have no more vaccines to book</p>
+                  <a th:if="0 == ${dose} OR 2 == ${dose}" href="/book" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-4-dark-1 u-radius-50 u-text-white u-btn-1">Book</a>
                 </div>
               </div>
               <div class="u-align-center u-container-style u-layout-cell u-size-20 u-white u-layout-cell-2">
                 <div class="u-container-layout u-container-layout-2">
                   <h2 class="u-custom-font u-text u-text-3">Last Activity</h2>
                   <p class="u-text u-text-4">Last Activity</p>
+                    <p class="u-text u-text-4" <span th:text="${lastActivity}"></span></p>
                 </div>
               </div>
               <div class="cell-temp-clone u-align-center u-container-style u-custom-color-1 u-layout-cell u-size-20 u-layout-cell-3" data-href="https://nicepage.com">
