@@ -207,7 +207,6 @@ public class UserController {
             appointmentRepository.delete(apt);
             Centre centre = centreRepository.getById(apt.getCentre().getId());
             centre.getAppointments().remove(apt);
-            //System.out.println(user.getAppointments().size());System.out.println(centre.getAppointments().size());
             centreRepository.save(centre);
             userRepository.save(user);
         }
@@ -284,7 +283,6 @@ public class UserController {
             else {
                 user.setUserType(UserType.USER);
                 currentUserID = userRepository.save(user).getId();
-                System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
                 redirect = "/user";
             }
         }
@@ -309,12 +307,10 @@ public class UserController {
                 response.sendRedirect("/");
             }
             else {
-                System.out.println("Password wrong");
                 response.sendRedirect("/login");
             }
         }
         else {
-            System.out.println("Email wrong");
             response.sendRedirect("/login");
         }
     }
@@ -392,7 +388,6 @@ public class UserController {
         String date = sdf.format(c.getTime());
         return new Appointment(date, false, oldAppointment.getUser(), oldAppointment.getCentre());
     }
-
 
     public boolean isLoggedIn(){
         return userRepository.findById(currentUserID) != null;

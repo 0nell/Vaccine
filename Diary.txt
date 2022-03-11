@@ -5,10 +5,16 @@ Frontend using External Application to generate HTML/CSS
 Forum Backend
 Front end form validation for signup and Booking
 Other QOL Changes and Bug fixes
+
 Sean McDonnell:
 Persistence
+
 Adam Caffrey:
-Admin 
+implemented Admin backend, sign in backend, login backend, booking backend
+logged in users, admin and logged off users see different home pages
+automatic booking of second appointment after admin administers vaccine
+
+
 Jacob Whelan:
 Set up statistics page
 Other QOL Changes and Bug fixes
