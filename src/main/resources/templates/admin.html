@@ -9,11 +9,8 @@
     <title>admin</title>
     <link rel="stylesheet" href="css/nicepage.css" media="screen">
 <link rel="stylesheet" href="css/admin.css" media="screen">
-    <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
-    <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
     <meta name="generator" content="Nicepage 4.6.5, nicepage.com">
     <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
-    
     
     
     
@@ -33,19 +30,25 @@
         <a href="/" class="u-image u-logo u-image-1" data-image-width="446" data-image-height="128">
           <img src="images/hse-logo.png" class="u-logo-image u-logo-image-1">
         </a>
-    <section class="u-clearfix u-custom-color-3 u-section-1" id="sec-7dd5">
+    <section class="u-clearfix u-custom-color-3 u-section-1" id="sec-0318">
       <div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
-        <div class="u-expanded-width u-list u-list-1">
+        <div class="u-list u-list-1">
           <div class="u-repeater u-repeater-1">
             <div class="u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-container-layout-1">
-                <a href="/forum" class="u-align-center u-btn u-button-style u-grey-90 u-btn-1">Forum<br>
+                <a href="/forum" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-1">Forum<br>
                 </a>
               </div>
             </div>
             <div class="u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-container-layout-2">
-                <a href="/stats" class="u-align-center u-btn u-button-style u-grey-90 u-btn-2">Statistics<br>
+                <a href="/stats" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-2">Stats<br>
+                </a>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-3">
+                <a href="/logout" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-3">Log out<br>
                 </a>
               </div>
             </div>
@@ -53,43 +56,96 @@
         </div>
       </div>
     </section>
-    <section th:each="appointment : ${appointments}" th:if="${not appointment.received}" class="u-clearfix u-custom-color-3 u-section-2" id="sec-7027">
+    <section class="u-clearfix u-custom-color-3 u-section-2" id="sec-7dd5">
       <div class="u-clearfix u-sheet u-sheet-1">
-        <div class="u-form u-form-1">
-          <form action="/apply-dose" method="POST" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="custom" name="form" style="padding: 10px;">
-            <div class="u-form-group u-form-select u-form-group-1">
-              <label for="select-dcf2" class="u-label">Select</label>
-              <div class="u-form-select-wrapper">
-                <select id="select-dcf2" name="vaccine" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white">
-                  <option value="Pfizer">Pfizer</option>
-                  <option value="Moderna">Moderna</option>
-                </select>
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" version="1" class="u-caret"><path fill="currentColor" d="M4 8L0 4h8z"></path></svg>
+        <h2 class="u-text u-text-default u-text-1">Appointments</h2>
+        <div class="u-list u-list-1">
+          <div class="u-repeater u-repeater-1">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-1">
+                <h4 class="u-text u-text-default u-text-2">Patients</h4>
               </div>
             </div>
-            <input  type="hidden"  name="appointmentId" th:value="${appointment.id}">
-            <div class="u-align-right u-form-group u-form-submit">
-              <input type="submit" value="Apply Dose" class="u-btn u-btn-submit u-button-style">
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-2">
+                <h4 class="u-text u-text-default u-text-3">Centre</h4>
+              </div>
             </div>
-            <div class="u-form-send-message u-form-send-success"> Thank you! Your message has been sent. </div>
-            <div class="u-form-send-error u-form-send-message"> Unable to send your message. Please fix errors then try again. </div>
-            <input type="hidden" value="" name="recaptchaResponse">
-          </form>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-3">
+                <h4 class="u-text u-text-default u-text-4">Date</h4>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-4">
+                <h4 class="u-text u-text-default u-text-5">Dose</h4>
+              </div>
+            </div>
+            <div class="u-container-style u-list-item u-repeater-item">
+              <div class="u-container-layout u-similar-container u-container-layout-5">
+                <h4 class="u-text u-text-default u-text-6">Apply Dose</h4>
+              </div>
+            </div>
+          </div>
         </div>
-        <h2 th:text="|Patient: ${appointment.user.firstName} ${appointment.user.surname}|" class="u-text u-text-default u-text-1"></h2>
-        <h4 th:text="|Centre: ${appointment.centre.name}|" class="u-text u-text-default u-text-2"></h4>
+        <div th:each="appointment : ${appointments}" th:if="${not appointment.received}" class="u-clearfix u-layout-wrap u-layout-wrap-1">
+          <div class="u-layout">
+            <div class="u-layout-row">
+              <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-1">
+                <div class="u-container-layout u-container-layout-6">
+                  <p th:text="|${appointment.user.firstName} ${appointment.user.surname}|" class="u-text u-text-7"></p>
+                </div>
+              </div>
+              <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-2">
+                <div class="u-container-layout u-container-layout-7">
+                  <p th:text="${appointment.centre.name}" class="u-text u-text-8"></p>
+                </div>
+              </div>
+              <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-3">
+                <div class="u-container-layout u-container-layout-8">
+                  <p th:text="${appointment.appointmentDateTime}" class="u-text u-text-9"></p>
+                </div>
+              </div>
+              <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-4">
+                <div class="u-container-layout u-container-layout-9">
+                  <p th:if="${appointment.firstDose}" class="u-text u-text-10">First</p>
+                  <p th:if="${not appointment.firstDose}" class="u-text u-text-10">Second</p>
+                </div>
+              </div>
+              <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-5">
+                <div class="u-container-layout u-container-layout-10">
+                  <div class="u-form u-form-1">
+                    <form action="/apply-dose" method="POST" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="custom" name="form-1" style="padding: 10px;">
+                      <div class="u-form-group u-form-select u-form-group-1">
+                        <div class="u-form-select-wrapper">
+                          <select id="select-7df7" name="select" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white">
+                            <option value="pfizer">pfizer</option>
+                            <option value="moderna">moderna</option>
+                          </select>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" version="1" class="u-caret"><path fill="currentColor" d="M4 8L0 4h8z"></path></svg>
+                        </div>
+                      </div>
+                      <input  type="hidden"  name="appointmentId" th:value="${appointment.id}">
+                      <div class="u-align-center u-form-group u-form-submit">
+                        <input type="submit" value="Apply Dose" class="u-btn u-btn-submit u-button-style">
+                      </div>
+                      <div class="u-form-send-message u-form-send-success"> Thank you! Your message has been sent. </div>
+                      <div class="u-form-send-error u-form-send-message"> Unable to send your message. Please fix errors then try again. </div>
+                      <input type="hidden" value="" name="recaptchaResponse">
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
-
-
-
-
-
+    
+    
+    
     <footer class="u-align-center u-clearfix u-footer u-grey-80 u-footer" id="sec-f756"><div class="u-clearfix u-sheet u-sheet-1">
-      <p class="u-small-text u-text u-text-variant u-text-1">
-        For more information on the coronavirus pandemic and the most current public guidelines follow us on Twitter at
-        <a href="https://twitter.com/HSELive" target="_blank">@HSELive</a>
-      </p>
-    </div></footer>
+        <p class="u-small-text u-text u-text-variant u-text-1">Sample text. Click to select the text box. Click again or double click to start editing the text.</p>
+      </div></footer>
   </body>
 </html>
