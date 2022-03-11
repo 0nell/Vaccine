@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 @Controller
 public class UserController {
+    String error = "";
 
     @Autowired
     UserRepository userRepository;
@@ -96,7 +97,7 @@ public class UserController {
     }
 
     @RequestMapping({"/signup"})
-    public String signup(HttpServletResponse response){
+    public String signup(HttpServletResponse response, Model model){
         if(isLoggedIn()){
             try {
                 response.sendRedirect("/");
@@ -104,6 +105,8 @@ public class UserController {
                 e.printStackTrace();
             }
         }
+        model.addAttribute("error", error);
+        error = "";
         return "signup.html";
     }
 
@@ -129,9 +132,18 @@ public class UserController {
     @RequestMapping({"/stats"})
     public String stats(Model model)
     {
-        int avgAge=0,maleCount=0,userCount=0;;
+        int avgAge=0, userCount=0;
+        float maleCount=0;
         Set<String> countries = new HashSet<>();
-        
+
+        if(userRepository.count() == 0) {
+            model.addAttribute("total", 0);
+            model.addAttribute("age", 0);
+            model.addAttribute("sex", 0);
+            model.addAttribute("nationalities", 0);
+            return "stats.html";
+        }
+
         for(User user : userRepository.findAll()) {
             if(user.getUserType() == UserType.USER) {
                 userCount++;
@@ -236,24 +248,35 @@ public class UserController {
 
     @PostMapping({"/signup"})
     public void signup_submit(User user, HttpServletResponse response) throws IOException, ParseException {
+        String redirect = "/";
         if(!isLoggedIn()) {
             boolean emailNotExists = userRepository.findByEmail(user.getEmail()).isEmpty();
             boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
             Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
             boolean ageRequirement = isOver18(d);
-            //System.out.println(user.getMale());
-            if (emailNotExists && ppsNotExists && ageRequirement) {
+
+            if(!emailNotExists || !ppsNotExists || !ageRequirement){
+                if(!emailNotExists){
+                    error += "That Email already belongs to an account,     ";
+                    redirect = "/signup";
+                }
+                if (!ppsNotExists){
+                    error += "That PPS already belongs to an account,   ";
+                    redirect = "/signup";
+                }
+                if(!ageRequirement){
+                    error += "\nYou cannot register if you are under 18";
+                    redirect = "/signup";
+                }
+            }
+            else {
                 user.setUserType(UserType.USER);
                 currentUserID = userRepository.save(user).getId();
                 System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
-                response.sendRedirect("/user");
-            } else {
-                System.out.println("email: " + emailNotExists + "\npps: " + ppsNotExists + "\nage: " + ageRequirement);
-                response.sendRedirect("/signup");
+                redirect = "/user";
             }
         }
-        else
-            response.sendRedirect("/");
+        response.sendRedirect(redirect);
     }
 
     public boolean isOver18(Date dob){
