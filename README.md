@@ -15,6 +15,3 @@
 6 : The admin user is:  email: admin@admin.ie password: iamadmin 
 
 
-## The diary file 
-
-    [Diary file ](https://github.com/0nell/Vaccine/blob/master/Diary.txt)
