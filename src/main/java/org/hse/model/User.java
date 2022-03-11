@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import java.time.LocalDate;
+import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.text.SimpleDateFormat;
+
 @Entity
 @Table(name = "user_table")
 public class User
@@ -201,6 +206,21 @@ public class User
     }
     public String getMale() {
         return male;
+    }
+
+    public int getAge() {
+        Date d = new Date();
+        try {
+            d = new SimpleDateFormat("yyyy-MM-dd").parse(this.dob);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Date today = Calendar.getInstance().getTime();
+        long d1 = TimeUnit.DAYS.convert(today.getTime(), TimeUnit.MILLISECONDS);
+        long d2 = TimeUnit.DAYS.convert(d.getTime(), TimeUnit.MILLISECONDS);
+        long diff = d1 - d2;
+        return (int)diff/360;
     }
 
     public boolean isMale()
