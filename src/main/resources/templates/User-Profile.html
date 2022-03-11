@@ -44,7 +44,9 @@
                   <div class="u-container-style u-layout-cell u-size-60 u-layout-cell-1">
                     <div class="u-container-layout u-container-layout-1">
                       <h1 class="u-text u-text-default u-text-1"> User Profile</h1>
-                      <h3 class="u-text u-text-default u-text-2"> Access your Detailed Vaccination Status</h3>
+                      <h2 class="u-custom-font u-text u-text-3">Last Activity</h2>
+                      <p class="u-text u-text-4" <span th:text="${lastActivity}"></span></p>
+                      <a href="/logout" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-3-light-1 u-radius-50 u-text-white u-btn-2">Log Out</a>
                     </div>
                   </div>
                 </div>
@@ -66,19 +68,23 @@
                   <a th:if="'Book your first dose now' == ${bookMessage} OR 'Book your second dose now' == ${bookMessage}" href="/book" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-4-dark-1 u-radius-50 u-text-white u-btn-1">Book</a>
                 </div>
               </div>
+
               <div class="u-align-center u-container-style u-layout-cell u-size-20 u-white u-layout-cell-2">
                 <div class="u-container-layout u-container-layout-2">
-                  <h2 class="u-custom-font u-text u-text-3">Last Activity</h2>
-                  <p class="u-text u-text-4">Last Activity</p>
-                    <p class="u-text u-text-4" <span th:text="${lastActivity}"></span></p>
+                  <span th:if="${date}">
+                  <h2 class="u-custom-font u-text u-text-3">Appointment details</h2>
+                  <p class="u-text u-text-6"th:text="${date}"></p>
+                  <p class="u-text u-text-7"th:text="${dose}"></p>
+                  <a href="/cancel-appointment" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-3-light-1 u-radius-50 u-text-white u-btn-2">Cancel</a>
+                  </span>
                 </div>
               </div>
+
               <div class="cell-temp-clone u-align-center u-container-style u-custom-color-1 u-layout-cell u-size-20 u-layout-cell-3" data-href="https://nicepage.com">
                 <div class="u-container-layout u-container-layout-3">
-                  <h2 class="u-custom-font u-text u-text-5">Appointment details</h2>
-                  <p class="u-text u-text-6">Date</p>
-                  <p class="u-text u-text-7">Dose</p>
-                  <a href="https://nicepage.com/c/pets-animals-html-templates" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-3-light-1 u-radius-50 u-text-white u-btn-2">Cancel</a>
+                  <h2 class="u-custom-font u-text u-text-5">Vaccination Statistics</h2>
+                  <p class="u-text u-text-6">View Statistics</p>
+                  <a href="/stats" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-3-light-1 u-radius-50 u-text-white u-btn-2">View</a>
                 </div>
               </div>
             </div>
@@ -86,11 +92,15 @@
         </div>
       </div>
     </section>
-    
-    
-    
-    <footer class="u-align-center u-clearfix u-footer u-grey-80 u-footer" id="sec-f756"><div class="u-clearfix u-sheet u-sheet-1">
-        <p class="u-small-text u-text u-text-variant u-text-1">Sample text. Click to select the text box. Click again or double click to start editing the text.</p>
-      </div></footer>
+    <section class="u-align-center u-clearfix u-section-3" id="sec-3a0b">
+      <div class="u-align-center u-clearfix u-sheet u-valign-middle u-sheet-1">
+        <h2 class="u-text u-text-default u-text-1">Forum</h2>
+        <p class="u-text u-text-2">Have any queries you need answered, visit our forum with epert answers</p>
+        <a href="/forum" class="u-btn u-button-style u-grey-90 u-btn-1">Forum<br>
+        </a>
+      </div>
+    </section>
+
+
   </body>
 </html>

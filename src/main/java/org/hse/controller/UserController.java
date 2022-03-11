@@ -77,6 +77,12 @@ public class UserController {
         return "signup.html";
     }
 
+    @RequestMapping({"/logout"})
+    public void logout(HttpServletResponse response) throws IOException {
+       currentUserID = -1;
+       response.sendRedirect("/");
+    }
+
     @RequestMapping({"/login"})
     public String login()
     {
@@ -97,6 +103,16 @@ public class UserController {
         return "forum.html";
     }
 
+    @RequestMapping({"/cancel-appointment"})
+    public void cancel(HttpServletResponse response) throws IOException {
+        User user = userRepository.getById(currentUserID);
+        if (!user.getAppointments().isEmpty()) {
+            //user.getAppointments().remove(user.getAppointments().size()-1);
+            appointmentRepository.delete(user.getAppointments().remove(user.getAppointments().size()-1));
+            userRepository.save(user);
+        }
+        response.sendRedirect("/");
+    }
     @RequestMapping({"/user"})
     public String user(Model model, HttpServletResponse response) throws IOException {
         if(userRepository.findById(currentUserID) == null) {
@@ -120,6 +136,8 @@ public class UserController {
                 else {
                     lastActivity = "First Dose has been booked";
                     bookMessage = "You can book your second dose after receiving first dose";
+                    model.addAttribute("dose", "Dose " + 1);
+                    model.addAttribute("date", userAppointments.get(userAppointments.size()-1).getAppointmentDateTime());
                 }
             } else if (userAppointments.get(1).isReceived()) {
                 lastActivity = "You are fully vaccinated";
@@ -199,7 +217,6 @@ public class UserController {
         String name = "Anonymous User";
         if(currentUserID != -1)
             name  = userRepository.findById(currentUserID).getFirstName() + " " + userRepository.findById(currentUserID).getSurname();
-        System.out.println(questionId);
         Question question = questionRepository.findById(questionId);
         Answer newAnswer = new Answer(answer, name, question);
         answerRepository.save(newAnswer);
@@ -212,8 +229,6 @@ public class UserController {
         Centre centre = centreRepository.getById(centreId);
         boolean firstDose = user.getAppointments().isEmpty();
         Appointment appointment = new Appointment(date, firstDose, user, centre);
-        System.out.println("User:\n" + user.getEmail() + ", " + user.getPassword() + ", " + user.getFirstName());
-        System.out.println("\nAppointment:\n" + user.getAppointments().get(0).getCentre().getName());
         appointmentRepository.save(appointment);
         userRepository.save(user);
         response.sendRedirect("/user");
