@@ -7,7 +7,11 @@ Front end form validation for signup and Booking
 Other QOL Changes and Bug fixes
 
 Sean McDonnell:
-Persistence
+Persistence:- Database design and creation
+            - Database first time population with admin user and centres
+Forum design and admin checks
+Html and css design finalization
+Backend bug fixing to do with proper persistence
 
 Adam Caffrey:
 implemented Admin backend, sign in backend, login backend, booking backend
