@@ -103,6 +103,10 @@ public class UserController {
     {
         model.addAttribute("unanswered", questionRepository.findByAnswerIsNull());
         model.addAttribute("answered", questionRepository.findByAnswerIsNotNull());
+        boolean admin = false;
+        if (currentUserID != -1)
+            admin = userRepository.findById(currentUserID).getUserType() == UserType.ADMIN;
+        model.addAttribute("isAdmin", admin);
         return "forum.html";
     }
 
@@ -222,7 +226,7 @@ public class UserController {
     public void ask_question(String title, String question, HttpServletResponse response) throws IOException {
         String name = "Anonymous User";
         if(currentUserID != -1)
-            name  = userRepository.findById(currentUserID).getFirstName() + " " + userRepository.findById(currentUserID).getSurname();
+            name  = userRepository.findById(currentUserID).getFirstName();
 
         Question newQuestion = new Question(title, question, name);
         questionRepository.save(newQuestion);
@@ -231,15 +235,18 @@ public class UserController {
 
     @PostMapping({"/forum/answer"})
     public void answer_question(String answer, long questionId, HttpServletResponse response) throws IOException {
-        String name = "Anonymous User";
-        if(currentUserID != -1)
-            name  = userRepository.findById(currentUserID).getFirstName() + " " + userRepository.findById(currentUserID).getSurname();
-        Question question = questionRepository.findById(questionId);
-        Answer newAnswer = new Answer(answer, name, question);
-        question.setAnswer(newAnswer);
-        answerRepository.save(newAnswer);
-        questionRepository.save(question);
-        response.sendRedirect("/forum");
+        if(currentUserID != -1 && userRepository.findById(currentUserID).getUserType() == UserType.ADMIN)
+        {
+            String name  = userRepository.findById(currentUserID).getFirstName();
+            Question question = questionRepository.findById(questionId);
+            Answer newAnswer = new Answer(answer, name, question);
+            question.setAnswer(newAnswer);
+            answerRepository.save(newAnswer);
+            questionRepository.save(question);
+            response.sendRedirect("/forum");
+        }
+        else
+            response.sendRedirect("/forum");
     }
 
     @PostMapping({"/book"})
@@ -251,8 +258,10 @@ public class UserController {
             boolean firstDose = user.getAppointments().isEmpty();
             Appointment appointment = new Appointment(date, firstDose, user, centre);
             user.getAppointments().add(appointment);
+            centre.getAppointments().add(appointment);
             appointmentRepository.save(appointment);
             userRepository.save(user);
+            centreRepository.save(centre);
             response.sendRedirect("/user");
         }
         else{
