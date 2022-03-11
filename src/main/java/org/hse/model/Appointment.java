@@ -2,8 +2,6 @@ package org.hse.model;
 
 import javax.validation.constraints.NotBlank;
 import javax.persistence.*;
-import org.hse.model.User;
-import org.hse.model.VaccineType;
 import java.util.Date;
 
 @Entity
@@ -15,25 +13,22 @@ public class Appointment {
 
     @Column
     @NotBlank
-    private Date appointmentDateTime;
+    private String appointmentDateTime;
 
     @Column
-    @NotBlank
     private boolean received;
 
     @Column
-    @NotBlank
     private boolean firstDose;
 
     @Column
-    @NotBlank
     private VaccineType vaccineType;
 
-    @NotBlank       //user can have many appts
+          //user can have many appts
     @ManyToOne
     private User user;
 
-    @NotBlank       //centre can have many apts
+           //centre can have many apts
     @ManyToOne
     private Centre centre;
 
@@ -41,7 +36,15 @@ public class Appointment {
         super();
     }
 
-    public Appointment(@NotBlank Date appointmentDateTime, @NotBlank boolean firstDose, @NotBlank User user, @NotBlank VaccineType vaccineType,@NotBlank Centre centre) {
+    public Appointment(@NotBlank String appointmentDateTime, boolean firstDose, User user, Centre centre) {
+        this.appointmentDateTime = appointmentDateTime;
+        this.firstDose = firstDose;
+        this.user = user;
+        this.received = false;              //obviously hasnt recieved dose if appointment just being made
+        this.centre = centre;
+    }
+
+    public Appointment(@NotBlank String appointmentDateTime, boolean firstDose, User user, VaccineType vaccineType, Centre centre) {
         this.appointmentDateTime = appointmentDateTime;
         this.firstDose = firstDose;
         this.user = user;
@@ -58,11 +61,11 @@ public class Appointment {
         this.id = id;
     }
 
-    public Date getAppointmentDateTime() {
+    public String getAppointmentDateTime() {
         return appointmentDateTime;
     }
 
-    public void setAppointmentDateTime(Date appointmentDateTime) {
+    public void setAppointmentDateTime(String appointmentDateTime) {
         this.appointmentDateTime = appointmentDateTime;
     }
 

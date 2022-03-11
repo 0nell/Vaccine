@@ -32,7 +32,6 @@ public class UserController {
     CentreRepository centreRepository;
     @Autowired
     AppointmentRepository appointmentRepository;
-
     private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
@@ -52,12 +51,22 @@ public class UserController {
     }
 
     @RequestMapping({"/", "/home"})
-    public String index() throws ParseException {
+    public String index(HttpServletResponse response) throws ParseException, IOException {
+        if(userRepository.findById(currentUserID) != null){
+            if(userRepository.findById(currentUserID).getUserType() == UserType.ADMIN)
+                response.sendRedirect("/admin");
+            else
+                response.sendRedirect("/user");
+        }
         return "index.html";
     }
 
     @RequestMapping({"/book"})
-    public String Book() {
+    public String Book(Model model, HttpServletResponse response) throws IOException {
+        if(userRepository.findById(currentUserID) == null || userRepository.findById(currentUserID).getUserType() != UserType.USER){
+            response.sendRedirect("/");
+        }
+        model.addAttribute("centres", centreRepository.findAll());
         return "Book.html";
     }
 
@@ -65,6 +74,12 @@ public class UserController {
     public String signup()
     {
         return "signup.html";
+    }
+
+    @RequestMapping({"/logout"})
+    public void logout(HttpServletResponse response) throws IOException {
+       currentUserID = -1;
+       response.sendRedirect("/");
     }
 
     @RequestMapping({"/login"})
@@ -87,54 +102,78 @@ public class UserController {
         return "forum.html";
     }
 
+    @RequestMapping({"/admin"})
+    public String admin(Model model, HttpServletResponse response) throws IOException {
+        if(userRepository.findById(currentUserID) == null || userRepository.findById(currentUserID).getUserType() != UserType.ADMIN) {
+            response.sendRedirect("/");
+        }
+        return "admin.html";
+    }
+
+    @RequestMapping({"/cancel-appointment"})
+    public void cancel(HttpServletResponse response) throws IOException {
+        User user = userRepository.getById(currentUserID);
+        if (!user.getAppointments().isEmpty()) {
+            //user.getAppointments().remove(user.getAppointments().size()-1);
+            appointmentRepository.delete(user.getAppointments().remove(user.getAppointments().size()-1));
+            userRepository.save(user);
+        }
+        response.sendRedirect("/");
+    }
     @RequestMapping({"/user"})
     public String user(Model model, HttpServletResponse response) throws IOException {
-        if(currentUserID == -1) {
+        if(userRepository.findById(currentUserID) == null) {
             response.sendRedirect("/");
             return "index.html";
         }
         else {
-            List<Appointment> userAppointments = userRepository.getById(currentUserID).getAppointments();
+            User user = userRepository.getById(currentUserID);
+            List<Appointment> userAppointments = user.getAppointments();
             String lastActivity = "";
-            int dose = 0;
+            String bookMessage = "";
 
-            if (userAppointments.isEmpty())
+            if (userAppointments.isEmpty()) {
                 lastActivity = "No recent Activity";
+                bookMessage = "Book your first dose now";
+            }
             else if (userAppointments.size() == 1) {
                 if (userAppointments.get(0).isReceived()) {
                     lastActivity = "First Dose has been received, awaiting second dose";
-                    dose = 2;
+                    bookMessage = "Book your second dose now";
                 }
                 else {
                     lastActivity = "First Dose has been booked";
-                    dose = 1;
+                    bookMessage = "You can book your second dose after receiving first dose";
+                    model.addAttribute("dose", "Dose " + 1);
+                    model.addAttribute("date", userAppointments.get(userAppointments.size()-1).getAppointmentDateTime());
                 }
             } else if (userAppointments.get(1).isReceived()) {
                 lastActivity = "You are fully vaccinated";
-                dose = 3;
+                bookMessage = "You have no more vaccines to book";
             }
 
             model.addAttribute("lastActivity", lastActivity);
-            model.addAttribute("dose", dose);
+            model.addAttribute("bookMessage", bookMessage);
+
             return "User-Profile.html";
         }
     }
 
     @PostMapping({"/signup"})
     public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException, ParseException {
-        boolean emailExists = userRepository.findByEmail(user.getEmail()).isEmpty();
-        boolean ppsExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
+        boolean emailNotExists = userRepository.findByEmail(user.getEmail()).isEmpty();
+        boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
         Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
         boolean ageRequirement = isOver18(d);
 
-        if(emailExists && ppsExists && ageRequirement){
+        if(emailNotExists && ppsNotExists && ageRequirement){
             user.setUserType(UserType.USER);
             currentUserID = userRepository.save(user).getId();
             System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
             response.sendRedirect("/user");
         }
         else {
-            System.out.println("email: " + emailExists + "\npps: " + ppsExists + "\nage: " + ageRequirement);
+            System.out.println("email: " + emailNotExists + "\npps: " + ppsNotExists + "\nage: " + ageRequirement);
             response.sendRedirect("/signup");
         }
     }
@@ -155,19 +194,17 @@ public class UserController {
             if(userList.get(0).getPassword().equals(user.getPassword())) {
                 currentUserID = userList.get(0).getId();
                 System.out.println("You logged in!!");
-                response.sendRedirect("/user");
+                response.sendRedirect("/");
             }
             else {
                 System.out.println("Password wrong");
                 response.sendRedirect("/login");
             }
-
         }
         else {
             System.out.println("Email wrong");
             response.sendRedirect("/login");
         }
-
     }
 
     @PostMapping({"/forum/question"})
@@ -186,13 +223,24 @@ public class UserController {
         String name = "Anonymous User";
         if(currentUserID != -1)
             name  = userRepository.findById(currentUserID).getFirstName() + " " + userRepository.findById(currentUserID).getSurname();
-        System.out.println(questionId);
         Question question = questionRepository.findById(questionId);
         Answer newAnswer = new Answer(answer, name, question);
         question.setAnswer(newAnswer);
         answerRepository.save(newAnswer);
         questionRepository.save(question);
         response.sendRedirect("/forum");
+    }
+
+    @PostMapping({"/book"})
+    public void book_submit(String date, long centreId, HttpServletResponse response) throws IOException {
+        User user = userRepository.getById(currentUserID);
+        Centre centre = centreRepository.getById(centreId);
+        boolean firstDose = user.getAppointments().isEmpty();
+        Appointment appointment = new Appointment(date, firstDose, user, centre);
+
+        appointmentRepository.save(appointment);
+        userRepository.save(user);
+        response.sendRedirect("/user");
     }
 
    /* // Get All Users
