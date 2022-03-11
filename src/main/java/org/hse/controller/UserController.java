@@ -129,9 +129,18 @@ public class UserController {
     @RequestMapping({"/stats"})
     public String stats(Model model)
     {
-        int avgAge=0,maleCount=0,userCount=0;;
+        int avgAge=0, userCount=0;
+        float maleCount=0;
         Set<String> countries = new HashSet<>();
         
+        if(userRepository.count() == 0) {
+            model.addAttribute("total", 0);
+            model.addAttribute("age", 0);
+            model.addAttribute("sex", 0);
+            model.addAttribute("nationalities", 0);
+            return "stats.html";
+        }
+
         for(User user : userRepository.findAll()) {
             if(user.getUserType() == UserType.USER) {
                 userCount++;
