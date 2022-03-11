@@ -19,6 +19,33 @@
 		"logo": "images/hse-logo.png"
 }
     </script>
+
+    <script th:inline="javascript">
+
+      var array = ["2022-03-14", "2022-03-11", "2022-03-23"];
+      var dates = [[${dates}]]
+      
+      function limitdates(id, e){
+          array = dates[id-1]
+          var day = e.target.value;
+          
+          
+          // Days in JS range from 0-6 where 0 is Sunday and 6 is Saturday
+
+          if( array.includes(day)){
+              console.log("No")
+              e.target.setCustomValidity('Sorry But that Day has been Booked, Please Pick another day');
+
+          } else {
+              e.target.setCustomValidity('');
+
+          }
+          
+
+    }
+
+
+    </script>
     <meta name="theme-color" content="#478ac9">
     <meta property="og:title" content="Book">
     <meta property="og:description" content="">
@@ -42,7 +69,7 @@
           <form action="/book" method="POST" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="custom" name="form" style="padding: 10px;">
             <div class="u-form-date u-form-group u-form-group-1">
               <label for="date-4c25" class="u-label">Date</label>
-              <input type="date" placeholder="MM/DD/YYYY" id="date-4c25" name="date" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required="">
+              <input type="date" th:min="${min}" th:max="${max}" placeholder="MM/DD/YYYY"  id="date-4c25" name="date" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required th:onchange="|limitdates(${centre.id},event);|">
             </div>
               <input  type="hidden"  name="centreId" th:value="${centre.id}">
             <div class="u-align-left u-form-group u-form-submit">

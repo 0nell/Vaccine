@@ -79,4 +79,12 @@ public class Centre {
     public void setAppointments(List<Appointment> appointments) {
         this.appointments = appointments;
     }
+
+    public List<String> getBookedDates(){
+        List<String> dates = new ArrayList<>();
+        for(Appointment app: appointments){
+            dates.add(app.getAppointmentDateTime());
+        }
+        return dates;
+    }
 }
