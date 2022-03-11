@@ -53,19 +53,18 @@ public class UserController {
     @RequestMapping({"/", "/home"})
     public String index(HttpServletResponse response) throws ParseException, IOException {
         if(userRepository.findById(currentUserID) != null){
-            response.sendRedirect("/user");
+            if(userRepository.findById(currentUserID).getUserType() == UserType.ADMIN)
+                response.sendRedirect("/admin");
+            else
+                response.sendRedirect("/user");
         }
         return "index.html";
     }
 
     @RequestMapping({"/book"})
     public String Book(Model model, HttpServletResponse response) throws IOException {
-        if(userRepository.findById(currentUserID) == null){
+        if(userRepository.findById(currentUserID) == null || userRepository.findById(currentUserID).getUserType() != UserType.USER){
             response.sendRedirect("/");
-            return "index.html";
-        }
-        else if(!userRepository.findById(currentUserID).getAppointments().isEmpty()){
-            response.sendRedirect("/user");
         }
         model.addAttribute("centres", centreRepository.findAll());
         return "Book.html";
@@ -103,6 +102,14 @@ public class UserController {
         return "forum.html";
     }
 
+    @RequestMapping({"/admin"})
+    public String admin(Model model, HttpServletResponse response) throws IOException {
+        if(userRepository.findById(currentUserID) == null || userRepository.findById(currentUserID).getUserType() != UserType.ADMIN) {
+            response.sendRedirect("/");
+        }
+        return "admin.html";
+    }
+
     @RequestMapping({"/cancel-appointment"})
     public void cancel(HttpServletResponse response) throws IOException {
         User user = userRepository.getById(currentUserID);
@@ -120,7 +127,8 @@ public class UserController {
             return "index.html";
         }
         else {
-            List<Appointment> userAppointments = userRepository.getById(currentUserID).getAppointments();
+            User user = userRepository.getById(currentUserID);
+            List<Appointment> userAppointments = user.getAppointments();
             String lastActivity = "";
             String bookMessage = "";
 
@@ -186,19 +194,17 @@ public class UserController {
             if(userList.get(0).getPassword().equals(user.getPassword())) {
                 currentUserID = userList.get(0).getId();
                 System.out.println("You logged in!!");
-                response.sendRedirect("/user");
+                response.sendRedirect("/");
             }
             else {
                 System.out.println("Password wrong");
                 response.sendRedirect("/login");
             }
-
         }
         else {
             System.out.println("Email wrong");
             response.sendRedirect("/login");
         }
-
     }
 
     @PostMapping({"/forum/question"})
@@ -229,6 +235,7 @@ public class UserController {
         Centre centre = centreRepository.getById(centreId);
         boolean firstDose = user.getAppointments().isEmpty();
         Appointment appointment = new Appointment(date, firstDose, user, centre);
+
         appointmentRepository.save(appointment);
         userRepository.save(user);
         response.sendRedirect("/user");
