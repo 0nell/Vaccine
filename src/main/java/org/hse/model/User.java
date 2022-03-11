@@ -42,6 +42,9 @@ public class User
     private UserType userType;
 
     @Column
+    private String male;
+
+    @Column
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -64,7 +67,7 @@ public class User
         this.password = password;
     }
 
-    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType){
+    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType, String male){
         this.firstName = firstName;
         this.surname = surname;
         this.dob = dob;
@@ -75,6 +78,7 @@ public class User
         this.nationality = nationality;
         this.password = password;
         this.userType = userType;
+        this.male = male;
     }
 
     public long getId() {
@@ -194,5 +198,17 @@ public class User
 
     public boolean canBook(){
         return (!firstBooked() || (firstBooked() && firstDose() && !secondBooked() && !vaccinated()));
+    }
+    public String getMale() {
+        return male;
+    }
+
+    public boolean isMale()
+    {
+        return male.equals("true");
+    }
+
+    public void setMale(String male) {
+        this.male = male;
     }
 }

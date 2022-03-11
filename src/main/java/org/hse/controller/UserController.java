@@ -40,7 +40,7 @@ public class UserController {
     public void initialiseDatabaseValues() {
         if(userRepository.count() == 0)
         {
-            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,"iamadmin",UserType.ADMIN));
+            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,"iamadmin",UserType.ADMIN,"true"));
         }
         if(centreRepository.count() == 0)
         {
@@ -138,8 +138,12 @@ public class UserController {
     public void cancel(HttpServletResponse response) throws IOException {
         User user = userRepository.getById(currentUserID);
         if (!user.getAppointments().isEmpty()) {
-            //user.getAppointments().remove(user.getAppointments().size()-1);
-            appointmentRepository.delete(user.getAppointments().remove(user.getAppointments().size()-1));
+            Appointment apt = user.getAppointments().remove(user.getAppointments().size()-1);
+            appointmentRepository.delete(apt);
+            Centre centre = centreRepository.getById(apt.getCentre().getId());
+            centre.getAppointments().remove(apt);
+            //System.out.println(user.getAppointments().size());System.out.println(centre.getAppointments().size());
+            centreRepository.save(centre);
             userRepository.save(user);
         }
         response.sendRedirect("/");
@@ -194,7 +198,7 @@ public class UserController {
             boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
             Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
             boolean ageRequirement = isOver18(d);
-
+            //System.out.println(user.getMale());
             if (emailNotExists && ppsNotExists && ageRequirement) {
                 user.setUserType(UserType.USER);
                 currentUserID = userRepository.save(user).getId();
