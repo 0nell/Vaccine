@@ -36,19 +36,19 @@
           <div class="u-repeater u-repeater-1">
             <div class="u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-container-layout-1">
-                <a href="/forum" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-1">Forum<br>
+                <a href="/forum" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-1" style="background-color:#1e453e;">Forum<br>
                 </a>
               </div>
             </div>
             <div class="u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-container-layout-2">
-                <a href="/stats" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-2">Stats<br>
+                <a href="/stats" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-2" style="background-color:#1e453e;">Stats<br>
                 </a>
               </div>
             </div>
             <div class="u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-container-layout-3">
-                <a href="/logout" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-3">Log out<br>
+                <a href="/logout" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-3" style="background-color:#1e453e;">Log out<br>
                 </a>
               </div>
             </div>
@@ -56,9 +56,9 @@
         </div>
       </div>
     </section>
-    <section class="u-clearfix u-custom-color-3 u-section-2" id="sec-7dd5">
+    <section class="u-clearfix u-custom-color-3 u-section-2" id="sec-7dd5" style="margin-bottom:30px;border-style:solid;border-width:0px 0px 3px 0px;border-color:#1e453e;">
       <div class="u-clearfix u-sheet u-sheet-1">
-        <h2 class="u-text u-text-default u-text-1">Appointments</h2>
+        <h2 class="u-text u-text-default u-text-1" style="margin-top:20px;">Appointments</h2>
         <div class="u-list u-list-1">
           <div class="u-repeater u-repeater-1">
             <div class="u-container-style u-list-item u-repeater-item">
@@ -88,32 +88,32 @@
             </div>
           </div>
         </div>
-        <div th:each="appointment : ${appointments}" th:if="${not appointment.received}" class="u-clearfix u-layout-wrap u-layout-wrap-1" style="border-style:solid;border-width:3px;border-color:#1e453e;">
+        <div th:each="appointment : ${appointments}" th:if="${not appointment.received}" class="u-clearfix u-layout-wrap u-layout-wrap-1" style="border-style:solid;border-width:3px 0px 0px 0px;border-color:#1e453e;margin-top:10px;">
           <div class="u-layout">
             <div class="u-layout-row">
               <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-1">
-                <div class="u-container-layout u-container-layout-6">
+                <div class="u-container-layout u-container-layout-6" style="padding-top:70px">
                   <p th:text="|${appointment.user.firstName} ${appointment.user.surname}|" class="u-text u-text-7"></p>
                 </div>
               </div>
               <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-2">
-                <div class="u-container-layout u-container-layout-7">
+                <div class="u-container-layout u-container-layout-7" style="padding-top:70px">
                   <p th:text="${appointment.centre.name}" class="u-text u-text-8"></p>
                 </div>
               </div>
               <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-3">
-                <div class="u-container-layout u-container-layout-8">
+                <div class="u-container-layout u-container-layout-8" style="padding-top:70px">
                   <p th:text="${appointment.appointmentDateTime}" class="u-text u-text-9"></p>
                 </div>
               </div>
               <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-4">
-                <div class="u-container-layout u-container-layout-9">
+                <div class="u-container-layout u-container-layout-9" style="padding-top:70px">
                   <p th:if="${appointment.firstDose}" class="u-text u-text-10">First</p>
                   <p th:if="${not appointment.firstDose}" class="u-text u-text-10">Second</p>
                 </div>
               </div>
               <div class="u-container-style u-layout-cell u-size-12 u-layout-cell-5">
-                <div class="u-container-layout u-container-layout-10">
+                <div class="u-container-layout u-container-layout-10" style="padding-top:20px">
                   <div class="u-form u-form-1">
                     <form action="/apply-dose" method="POST" class="u-clearfix u-form-spacing-10 u-form-vertical u-inner-form" source="custom" name="form-1" style="padding: 10px;">
                       <div class="u-form-group u-form-select u-form-group-1">
