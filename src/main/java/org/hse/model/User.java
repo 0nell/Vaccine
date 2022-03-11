@@ -187,4 +187,12 @@ public class User
     public boolean firstBooked(){
         return !appointments.isEmpty();
     }
+
+    public boolean secondBooked(){
+        return appointments.size() == 2 & appointments.get(0).isReceived() && !appointments.get(1).isReceived();
+    }
+
+    public boolean canBook(){
+        return (!firstBooked() || (firstBooked() && firstDose() && !secondBooked() && !vaccinated()));
+    }
 }
