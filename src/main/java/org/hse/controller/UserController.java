@@ -153,7 +153,11 @@ public class UserController {
                     model.addAttribute("dose", "Dose " + 1);
                     model.addAttribute("date", userAppointments.get(userAppointments.size()-1).getAppointmentDateTime());
                 }
-            } else if (userAppointments.get(1).isReceived()) {
+            } else if(userAppointments.size() == 2 && !userAppointments.get(1).isReceived()){
+                lastActivity = "Second Dose has been booked";
+                bookMessage = "You have no more vaccines to book";
+            }
+            else if (userAppointments.get(1).isReceived()) {
                 lastActivity = "You are fully vaccinated";
                 bookMessage = "You have no more vaccines to book";
             }
