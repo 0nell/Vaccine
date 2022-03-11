@@ -135,9 +135,11 @@ public class UserController {
     {
         int avgAge=0, userCount=0;
         float maleCount=0;
+
+
         Set<String> countries = new HashSet<>();
 
-
+        int fullVaccine = 0;
 
         for(User user : userRepository.findAll()) {
             if(user.getUserType() == UserType.USER && user.firstDose()) {       //user has had a vaccination
@@ -145,6 +147,9 @@ public class UserController {
                 countries.add(user.getNationality());
                 if(user.isMale()){maleCount++;}
                 avgAge+= user.getAge();
+            }
+            if(user.vaccinated()){
+                fullVaccine++;
             }
         }
 
@@ -154,24 +159,43 @@ public class UserController {
             model.addAttribute("malePer", "NA");
             model.addAttribute("femalePer", "NA");
             model.addAttribute("nationalities", 0);
+            model.addAttribute("type", "NA");
+            model.addAttribute("full", 0);
             return "stats.html";
         }
 
         avgAge = avgAge/userCount;
         int min = avgAge-(avgAge%10);
         String range = (min) + "-" + (min+10);
+        String mostCommonShot;
 
+        int p = 0;
+        int m = 0;
         int vaccinationCount = 0;
         for(Appointment a : appointmentRepository.findAll()) {
             if(a.isReceived()) {
                 vaccinationCount++;
+                if (a.getVaccineType() == VaccineType.MODERNA)
+                        m++;
+                else
+                    p++;
             }
         }
+
+        if(p > m)
+            mostCommonShot = "Pfizer";
+        else if (m > p)
+            mostCommonShot = "Moderna";
+        else
+            mostCommonShot = "Pfizer/Moderna";
+
         model.addAttribute("total", vaccinationCount);
         model.addAttribute("age", range);
-        model.addAttribute("malePer", ""+(maleCount/userCount)*100);
-        model.addAttribute("femalePer", ""+(100-((maleCount/userCount)*100)));
+        model.addAttribute("type", mostCommonShot);
+        model.addAttribute("malePer", ""+Math.round((maleCount/userCount)*100));
+        model.addAttribute("femalePer", ""+Math.round(100-((maleCount/userCount)*100)));
         model.addAttribute("nationalities", countries.size());
+        model.addAttribute("full", fullVaccine);
 
         return "stats.html";
     }

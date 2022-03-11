@@ -183,7 +183,10 @@ public class User
     }
 
     public boolean vaccinated(){
-        return appointments.size() == 2 & appointments.get(0).isReceived() && appointments.get(1).isReceived();
+        if(appointments.size() == 2){
+            return appointments.get(0).isReceived() && appointments.get(1).isReceived();
+        }
+        return false;
     }
 
     public boolean firstDose(){
