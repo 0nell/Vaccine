@@ -137,13 +137,7 @@ public class UserController {
         float maleCount=0;
         Set<String> countries = new HashSet<>();
 
-        if(userRepository.count() == 0) {
-            model.addAttribute("total", 0);
-            model.addAttribute("age", 0);
-            model.addAttribute("sex", 0);
-            model.addAttribute("nationalities", 0);
-            return "stats.html";
-        }
+
 
         for(User user : userRepository.findAll()) {
             if(user.getUserType() == UserType.USER && user.firstDose()) {       //user has had a vaccination
@@ -153,6 +147,16 @@ public class UserController {
                 avgAge+= user.getAge();
             }
         }
+
+        if(userCount == 0) {
+            model.addAttribute("total", 0);
+            model.addAttribute("age", "NA");
+            model.addAttribute("malePer", "NA");
+            model.addAttribute("femalePer", "NA");
+            model.addAttribute("nationalities", 0);
+            return "stats.html";
+        }
+
         avgAge = avgAge/userCount;
         int min = avgAge-(avgAge%10);
         String range = (min) + "-" + (min+10);
@@ -165,7 +169,8 @@ public class UserController {
         }
         model.addAttribute("total", vaccinationCount);
         model.addAttribute("age", range);
-        model.addAttribute("sex", (maleCount/userCount)*100);
+        model.addAttribute("malePer", ""+(maleCount/userCount)*100);
+        model.addAttribute("femalePer", ""+(100-((maleCount/userCount)*100)));
         model.addAttribute("nationalities", countries.size());
 
         return "stats.html";

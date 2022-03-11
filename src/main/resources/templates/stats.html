@@ -32,26 +32,26 @@
           <img src="images/hse-logo.png" class="u-logo-image u-logo-image-1">
         </a>
 
-    <section class="u-align-center u-clearfix u-section-1" id="sec-e011">
+    <section class="u-align-center u-clearfix u-section-1" id="sec-e011" style="min-height:62vh;">
       <div class="u-clearfix u-sheet u-valign-middle-md u-valign-middle-sm u-valign-middle-xs u-valign-top-lg u-valign-top-xl u-sheet-1">
         <div class="u-expanded-width u-list u-list-1">
           <div class="u-repeater u-repeater-1">
             <div class="u-align-center u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-valign-middle u-container-layout-1">
                 <h1 class="u-text u-title u-text-1" data-animation-name="counter" data-animation-event="scroll" data-animation-duration="3000" th:text="${total}"></h1>
-                <p class="u-text u-text-2">Total number of vaccinations</p>
+                <p class="u-text u-text-2">Total number of vaccinations received</p>
               </div>
             </div>
             <div class="u-align-center u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-valign-middle u-container-layout-2">
                 <h1 class="u-text u-title u-text-3" data-animation-name="counter" data-animation-event="scroll" data-animation-duration="3000" th:text="${age}"></h1>
-                <p class="u-text u-text-4">Most vaccinated age group</p>
+                <p class="u-text u-text-4">Average vaccinated age group</p>
               </div>
             </div>
             <div class="u-align-center u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-valign-middle u-container-layout-3">
-                <h1 class="u-text u-title u-text-5" data-animation-name="counter" data-animation-event="scroll" data-animation-duration="3000" th:text="${sex}"></h1>
-                <p class="u-text u-text-6">Male % of vaccinated population</p>
+                <h1 class="u-text u-title u-text-5" data-animation-name="counter" data-animation-event="scroll" data-animation-duration="3000" th:text="|${malePer} / ${femalePer}|"></h1>
+                <p class="u-text u-text-6">Male / Female % of vaccinated population</p>
               </div>
             </div>
             <div class="u-align-center u-container-style u-list-item u-repeater-item">
