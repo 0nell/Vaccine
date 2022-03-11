@@ -1,5 +1,7 @@
 package org.hse.controller;
 
+import org.apache.catalina.startup.ClassLoaderFactory.Repository;
+import org.hibernate.dialect.function.AvgWithArgumentCastFunction;
 import org.hse.model.*;
 import org.hse.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -16,9 +19,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Controller
@@ -34,7 +34,7 @@ public class UserController {
     CentreRepository centreRepository;
     @Autowired
     AppointmentRepository appointmentRepository;
-    private long currentUserID = 3;
+    private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
     public void initialiseDatabaseValues() {
@@ -127,8 +127,37 @@ public class UserController {
     }
 
     @RequestMapping({"/stats"})
-    public String stats()
+    public String stats(Model model)
     {
+        int avgAge=0, userCount=0;
+        float maleCount=0;
+        Set<String> countries = new HashSet<>();
+        
+        if(userRepository.count() == 0) {
+            model.addAttribute("total", 0);
+            model.addAttribute("age", 0);
+            model.addAttribute("sex", 0);
+            model.addAttribute("nationalities", 0);
+            return "stats.html";
+        }
+
+        for(User user : userRepository.findAll()) {
+            if(user.getUserType() == UserType.USER) {
+                userCount++;
+                countries.add(user.getNationality());
+                if(user.isMale()){maleCount++;}
+                avgAge+= user.getAge();
+            }
+        }
+        avgAge = avgAge/userCount;
+        int min = avgAge-(avgAge%10);
+        String range = (min) + "-" + (min+10);
+
+        model.addAttribute("total", userCount);
+        model.addAttribute("age", range);
+        model.addAttribute("sex", (maleCount/userCount)*100);
+        model.addAttribute("nationalities", countries.size());
+
         return "stats.html";
     }
 
@@ -213,7 +242,7 @@ public class UserController {
     }
 
     @PostMapping({"/signup"})
-    public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException, ParseException {
+    public void signup_submit(User user, HttpServletResponse response) throws IOException, ParseException {
         if(!isLoggedIn()) {
             boolean emailNotExists = userRepository.findByEmail(user.getEmail()).isEmpty();
             boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
