@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -34,7 +35,7 @@ public class UserController {
     CentreRepository centreRepository;
     @Autowired
     AppointmentRepository appointmentRepository;
-    private long currentUserID = 3;
+    private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
     public void initialiseDatabaseValues() {
@@ -213,7 +214,7 @@ public class UserController {
     }
 
     @PostMapping({"/signup"})
-    public void signup_submit(User user, HttpServletResponse response, Model model) throws IOException, ParseException {
+    public void signup_submit(User user, HttpServletResponse response) throws IOException, ParseException {
         if(!isLoggedIn()) {
             boolean emailNotExists = userRepository.findByEmail(user.getEmail()).isEmpty();
             boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
