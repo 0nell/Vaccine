@@ -34,6 +34,7 @@ public class UserController {
     CentreRepository centreRepository;
     @Autowired
     AppointmentRepository appointmentRepository;
+
     private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
@@ -132,7 +133,7 @@ public class UserController {
         int avgAge=0, userCount=0;
         float maleCount=0;
         Set<String> countries = new HashSet<>();
-        
+
         if(userRepository.count() == 0) {
             model.addAttribute("total", 0);
             model.addAttribute("age", 0);
@@ -142,7 +143,7 @@ public class UserController {
         }
 
         for(User user : userRepository.findAll()) {
-            if(user.getUserType() == UserType.USER) {
+            if(user.getUserType() == UserType.USER && user.firstDose()) {       //user has had a vaccination
                 userCount++;
                 countries.add(user.getNationality());
                 if(user.isMale()){maleCount++;}
@@ -153,7 +154,13 @@ public class UserController {
         int min = avgAge-(avgAge%10);
         String range = (min) + "-" + (min+10);
 
-        model.addAttribute("total", userCount);
+        int vaccinationCount = 0;
+        for(Appointment a : appointmentRepository.findAll()) {
+            if(a.isReceived()) {
+                vaccinationCount++;
+            }
+        }
+        model.addAttribute("total", vaccinationCount);
         model.addAttribute("age", range);
         model.addAttribute("sex", (maleCount/userCount)*100);
         model.addAttribute("nationalities", countries.size());
