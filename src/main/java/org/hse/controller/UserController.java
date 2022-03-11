@@ -129,8 +129,7 @@ public class UserController {
 
         if(emailExists && ppsExists && ageRequirement){
             user.setUserType(UserType.USER);
-            currentUserID = user.getId();
-            userRepository.save(user);
+            currentUserID = userRepository.save(user).getId();
             System.out.println(user.getEmail() + ", " + user.getPassword() + ", " + user.getDob());
             response.sendRedirect("/user");
         }
@@ -190,7 +189,9 @@ public class UserController {
         System.out.println(questionId);
         Question question = questionRepository.findById(questionId);
         Answer newAnswer = new Answer(answer, name, question);
+        question.setAnswer(newAnswer);
         answerRepository.save(newAnswer);
+        questionRepository.save(question);
         response.sendRedirect("/forum");
     }
 

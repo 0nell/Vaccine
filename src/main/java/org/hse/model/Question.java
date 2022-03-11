@@ -27,7 +27,7 @@ public class Question {
     @Column
     private String user;
 
-    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "question",cascade = CascadeType.ALL)
     private Answer answer;
 
     public Question() {}
