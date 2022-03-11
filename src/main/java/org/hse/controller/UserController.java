@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.*;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
@@ -245,12 +246,20 @@ public class UserController {
     public void book_submit(String date, long centreId, HttpServletResponse response) throws IOException {
         User user = userRepository.getById(currentUserID);
         Centre centre = centreRepository.getById(centreId);
-        boolean firstDose = user.getAppointments().isEmpty();
-        Appointment appointment = new Appointment(date, firstDose, user, centre);
-        user.getAppointments().add(appointment);
-        appointmentRepository.save(appointment);
-        userRepository.save(user);
         response.sendRedirect("/user");
+        if(appointmentRepository.findByAppointmentDateTimeAndCentre(date, centre).isEmpty()){
+            boolean firstDose = user.getAppointments().isEmpty();
+            Appointment appointment = new Appointment(date, firstDose, user, centre);
+            user.getAppointments().add(appointment);
+            appointmentRepository.save(appointment);
+            userRepository.save(user);
+            response.sendRedirect("/user");
+        }
+        else{
+            response.sendRedirect("/book");
+        }
+
+
     }
 
     @PostMapping({"/apply-dose"})
