@@ -108,4 +108,13 @@ public class Appointment {
     public void setCentre(Centre centre) {
         this.centre = centre;
     }
+
+    public void setVaccineType(String type){
+        if(type.equals("Pfizer"))
+            setVaccineType(VaccineType.PFIZER);
+        else if(type.equals("Moderna"))
+            setVaccineType(VaccineType.MODERNA);
+        else
+            System.out.println("Something went wrong");
+    }
 }

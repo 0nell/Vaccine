@@ -172,4 +172,19 @@ public class User
     public void setUserType(UserType userType) {
         this.userType = userType;
     }
+
+    public boolean vaccinated(){
+        return appointments.size() == 2 & appointments.get(0).isReceived() && appointments.get(1).isReceived();
+    }
+
+    public boolean firstDose(){
+        if(!firstBooked())
+            return false;
+        else
+            return appointments.get(0).isReceived();
+    }
+
+    public boolean firstBooked(){
+        return !appointments.isEmpty();
+    }
 }

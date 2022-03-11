@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -67,6 +68,8 @@ public class UserController {
             response.sendRedirect("/");
         }
         model.addAttribute("centres", centreRepository.findAll());
+        String date = "" + java.time.LocalDate.now();
+        model.addAttribute("date", date);
         return "Book.html";
     }
 
@@ -106,6 +109,9 @@ public class UserController {
     public String admin(Model model, HttpServletResponse response) throws IOException {
         if(userRepository.findById(currentUserID) == null || userRepository.findById(currentUserID).getUserType() != UserType.ADMIN) {
             response.sendRedirect("/");
+        }
+        else {
+            model.addAttribute("appointments", appointmentRepository.findAll());
         }
         return "admin.html";
     }
@@ -241,6 +247,27 @@ public class UserController {
         appointmentRepository.save(appointment);
         userRepository.save(user);
         response.sendRedirect("/user");
+    }
+
+    @PostMapping({"/apply-dose"})
+    public void applyDose(String vaccine, long appointmentId, HttpServletResponse response) throws IOException {
+        Appointment appointment = appointmentRepository.getById(appointmentId);
+        appointment.setVaccineType(vaccine);
+        appointment.setReceived(true);
+        appointmentRepository.save(appointment);
+        if(appointment.isFirstDose()){
+            appointmentRepository.save(getSecondAppointment(appointment));
+        }
+        response.sendRedirect("/admin");
+    }
+
+    public Appointment getSecondAppointment(Appointment oldAppointment){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date()); // Using today's date
+        c.add(Calendar.DATE, 21); // Adding 5 days
+        String date = sdf.format(c.getTime());
+        return new Appointment(date, false, oldAppointment.getUser(), oldAppointment.getCentre());
     }
 
    /* // Get All Users
