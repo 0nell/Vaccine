@@ -237,7 +237,7 @@ public class UserController {
         Centre centre = centreRepository.getById(centreId);
         boolean firstDose = user.getAppointments().isEmpty();
         Appointment appointment = new Appointment(date, firstDose, user, centre);
-
+        user.getAppointments().add(appointment);
         appointmentRepository.save(appointment);
         userRepository.save(user);
         response.sendRedirect("/user");
