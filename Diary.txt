@@ -1,0 +1,16 @@
+Contributions
+
+Lleno Anya:
+Frontend using External Application to generate HTML/CSS
+Forum Backend
+Front end form validation for signup and Booking
+Other QOL Changes and Bug fixes
+Sean McDonnell:
+Persistence
+Adam Caffrey:
+Admin 
+Jacob Whelan:
+Set up statistics page
+Other QOL Changes and Bug fixes
+
+
