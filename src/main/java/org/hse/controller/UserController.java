@@ -34,7 +34,7 @@ public class UserController {
     CentreRepository centreRepository;
     @Autowired
     AppointmentRepository appointmentRepository;
-    private long currentUserID = -1;
+    private long currentUserID = 3;
 
     @EventListener(ApplicationReadyEvent.class)
     public void initialiseDatabaseValues() {
@@ -69,8 +69,29 @@ public class UserController {
             response.sendRedirect("/");
         }
         model.addAttribute("centres", centreRepository.findAll());
-        String date = "" + java.time.LocalDate.now();
-        model.addAttribute("date", date);
+        List<List<String>> dates = new ArrayList<>();
+        for(Centre c: centreRepository.findAll()){
+            dates.add(c.getBookedDates());
+        }
+        String min = "" + java.time.LocalDate.now();
+        String max = String.valueOf(java.time.LocalDate.now().plusDays(14));
+        User user = userRepository.getById(currentUserID);
+        if(user.firstBooked()){
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Calendar cal = Calendar.getInstance();
+            try {
+                cal.setTime(sdf.parse(user.getAppointments().get(0).getAppointmentDateTime()));
+                cal.add(Calendar.DATE, 21);
+                min = sdf.format(cal.getTime());
+                cal.add(Calendar.DATE, 365);
+                max = sdf.format(cal.getTime());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        model.addAttribute("min", min);
+        model.addAttribute("max", max);
+        model.addAttribute("dates", dates);
         return "Book.html";
     }
 
@@ -311,46 +332,6 @@ public class UserController {
         return new Appointment(date, false, oldAppointment.getUser(), oldAppointment.getCentre());
     }
 
-   /* // Get All Users
-    @GetMapping("/users")
-    public List<User> getAllUsers(){
-        return userRepository.findAll();
-    }
-
-    // Create a new User
-    @PostMapping("/users")
-    public User newUser(@Valid @RequestBody User newUser) {
-        return userRepository.save(newUser);
-    }
-
-    // Get a Single User
-    @GetMapping("/users/{id}")
-    public User getUserById(@PathVariable(value = "id") Long userId) throws UserNotFoundException {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-    }
-
-    // Update an Existing User
-    @PutMapping("/users/{id}")
-    public User updateUser(@PathVariable(value="id") Long userId, @Valid @RequestBody User userDetails)
-            throws UserNotFoundException{
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-        user.setFirstName(userDetails.getFirstName());
-        user.setSurname(userDetails.getSurname());
-
-        return userRepository.save(user);
-    }
-
-    // Delete a User
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable(value="id") Long userId) throws UserNotFoundException {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-        userRepository.delete(user);
-        return ResponseEntity.ok().build();
-    }*/
 
     public boolean isLoggedIn(){
         return userRepository.findById(currentUserID) != null;
