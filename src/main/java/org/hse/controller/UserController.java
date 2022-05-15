@@ -5,7 +5,10 @@ import org.hse.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
@@ -24,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class UserController {
     String error = "";
+    private boolean loginError = false;
 
     @Autowired
     UserRepository userRepository;
@@ -37,9 +41,6 @@ public class UserController {
     AppointmentRepository appointmentRepository;
 
     private BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
-
-
-    private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
     public void initialiseDatabaseValues() {
@@ -58,19 +59,20 @@ public class UserController {
     }
 
     @RequestMapping({"/", "/home"})
-    public String index(HttpServletResponse response) throws ParseException, IOException {
-        if(isLoggedIn()){
-            if(isAdmin())
-                response.sendRedirect("/admin");
-            else
-                response.sendRedirect("/user");
-        }
+    public String index(HttpServletResponse response, Authentication authentication) throws ParseException, IOException {
+        loginError = false;
+        int currentUserType = getCurrentAccountType(authentication);
+        if(currentUserType == 1)
+            response.sendRedirect("/admin");
+        else if (currentUserType == 2)
+            response.sendRedirect("/user");
         return "index.html";
     }
 
     @RequestMapping({"/book"})
-    public String Book(Model model, HttpServletResponse response) throws IOException {
-        if(!isLoggedIn() || isAdmin()){
+    public String Book(Model model, HttpServletResponse response, Authentication authentication) throws IOException {
+        int currentUserType = getCurrentAccountType(authentication);
+        if(currentUserType != 2){
             response.sendRedirect("/");
         }
         model.addAttribute("centres", centreRepository.findAll());
@@ -80,7 +82,7 @@ public class UserController {
         }
         String min = "" + java.time.LocalDate.now();
         String max = String.valueOf(java.time.LocalDate.now().plusDays(14));
-        User user = userRepository.getById(currentUserID);
+        User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
         if(user.firstBooked()){
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             Calendar cal = Calendar.getInstance();
@@ -101,8 +103,8 @@ public class UserController {
     }
 
     @RequestMapping({"/signup"})
-    public String signup(HttpServletResponse response, Model model){
-        if(isLoggedIn()){
+    public String signup(HttpServletResponse response, Model model, Authentication authentication){
+        if(getCurrentAccountType(authentication) != 0){
             try {
                 response.sendRedirect("/");
             } catch (IOException e) {
@@ -114,23 +116,24 @@ public class UserController {
         return "signup.html";
     }
 
-    @RequestMapping({"/logout"})
+   /* @RequestMapping({"/logout"})
     public void logout(HttpServletResponse response) throws IOException {
        currentUserID = -1;
        response.sendRedirect("/");
-    }
+    }*/
 
     //neither
     @RequestMapping({"/login"})
-    public String login(HttpServletResponse response)
+    public String login(HttpServletResponse response,Authentication authentication, Model model)
     {
-        if(isLoggedIn()){
+        if(getCurrentAccountType(authentication) != 0){
             try {
                 response.sendRedirect("/");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        model.addAttribute("isError",loginError);
         return "login.html";
     }
 
@@ -207,20 +210,18 @@ public class UserController {
 
     //either
     @RequestMapping({"/forum"})
-    public String forum(Model model)
+    public String forum(Model model, Authentication authentication)
     {
         model.addAttribute("unanswered", questionRepository.findByAnswerIsNull());
         model.addAttribute("answered", questionRepository.findByAnswerIsNotNull());
-        boolean admin = false;
-        if (isLoggedIn())
-            admin = userRepository.findById(currentUserID).getAuthority().equals("ADMIN");
+        boolean admin = (getCurrentAccountType(authentication) == 1);
         model.addAttribute("isAdmin", admin);
         return "forum.html";
     }
 
     @RequestMapping({"/admin"})
-    public String admin(Model model, HttpServletResponse response) throws IOException {
-        if(!isLoggedIn() || !isAdmin()) {
+    public String admin(Model model, HttpServletResponse response,Authentication authentication) throws IOException {
+        if(getCurrentAccountType(authentication) != 1) {
             response.sendRedirect("/");
         }
         else {
@@ -231,70 +232,69 @@ public class UserController {
 
     //user
     @RequestMapping({"/cancel-appointment"})
-    public void cancel(HttpServletResponse response) throws IOException {
-        User user = userRepository.getById(currentUserID);
-        if (!user.getAppointments().isEmpty()) {
-            Appointment apt = user.getAppointments().remove(user.getAppointments().size()-1);
-            appointmentRepository.delete(apt);
-            Centre centre = centreRepository.getById(apt.getCentre().getId());
-            centre.getAppointments().remove(apt);
-            centreRepository.save(centre);
-            userRepository.save(user);
+    public void cancel(HttpServletResponse response,Authentication authentication) throws IOException {
+        if(getCurrentAccountType(authentication) == 2) {
+            User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
+            if (!user.getAppointments().isEmpty()) {
+                Appointment apt = user.getAppointments().remove(user.getAppointments().size()-1);
+                appointmentRepository.delete(apt);
+                Centre centre = centreRepository.getById(apt.getCentre().getId());
+                centre.getAppointments().remove(apt);
+                centreRepository.save(centre);
+                userRepository.save(user);
+            }
         }
         response.sendRedirect("/");
     }
 
     //user
     @RequestMapping({"/user"})
-    public String user(Model model, HttpServletResponse response) throws IOException {
-        if(!isLoggedIn()) {
+    public String userLanding(Model model, HttpServletResponse response,Authentication authentication) throws IOException {
+        if(getCurrentAccountType(authentication) != 2) {
             response.sendRedirect("/");
-            return "index.html";
         }
-        else {
-            User user = userRepository.getById(currentUserID);
-            List<Appointment> userAppointments = user.getAppointments();
-            String lastActivity = "";
-            String bookMessage = "";
+        User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
+        List<Appointment> userAppointments = user.getAppointments();
+        String lastActivity = "";
+        String bookMessage = "";
 
-            if (userAppointments.isEmpty()) {
-                lastActivity = "No recent Activity";
-                bookMessage = "Book your first dose now";
+        if (userAppointments.isEmpty()) {
+            lastActivity = "No recent Activity";
+            bookMessage = "Book your first dose now";
+        }
+        else if (userAppointments.size() == 1) {
+            if (userAppointments.get(0).isReceived()) {
+                lastActivity = "First Dose has been received, awaiting second dose";
+                bookMessage = "Book your second dose now";
             }
-            else if (userAppointments.size() == 1) {
-                if (userAppointments.get(0).isReceived()) {
-                    lastActivity = "First Dose has been received, awaiting second dose";
-                    bookMessage = "Book your second dose now";
-                }
-                else {
-                    lastActivity = "First Dose has been booked";
-                    bookMessage = "You can book your second dose after receiving first dose";
-                    model.addAttribute("dose", "Dose " + 1);
-                    model.addAttribute("date", userAppointments.get(userAppointments.size()-1).getAppointmentDateTime());
-                }
-            } else if(userAppointments.size() == 2 && !userAppointments.get(1).isReceived()){
-                lastActivity = "Second Dose has been booked";
-                bookMessage = "You have no more vaccines to book";
-                model.addAttribute("dose", "Dose " + 2);
+            else {
+                lastActivity = "First Dose has been booked";
+                bookMessage = "You can book your second dose after receiving first dose";
+                model.addAttribute("dose", "Dose " + 1);
                 model.addAttribute("date", userAppointments.get(userAppointments.size()-1).getAppointmentDateTime());
             }
-            else if (userAppointments.get(1).isReceived()) {
-                lastActivity = "You are fully vaccinated";
-                bookMessage = "You have no more vaccines to book";
-            }
-
-            model.addAttribute("lastActivity", lastActivity);
-            model.addAttribute("bookMessage", bookMessage);
-
-            return "User-Profile.html";
+        } else if(userAppointments.size() == 2 && !userAppointments.get(1).isReceived()){
+            lastActivity = "Second Dose has been booked";
+            bookMessage = "You have no more vaccines to book";
+            model.addAttribute("dose", "Dose " + 2);
+            model.addAttribute("date", userAppointments.get(userAppointments.size()-1).getAppointmentDateTime());
         }
+        else if (userAppointments.get(1).isReceived()) {
+            lastActivity = "You are fully vaccinated";
+            bookMessage = "You have no more vaccines to book";
+        }
+
+        model.addAttribute("lastActivity", lastActivity);
+        model.addAttribute("bookMessage", bookMessage);
+
+        return "User-Profile.html";
     }
 
     //neither
     @PostMapping({"/signup"})
-    public void signup_submit(User user, HttpServletResponse response) throws IOException, ParseException {
+    public void signup_submit(User user, HttpServletResponse response, Authentication authentication) throws IOException, ParseException {
         String redirect = "/";
-        if(!isLoggedIn()) {
+        if(getCurrentAccountType(authentication)==0) {
             boolean usernameNotExists = userRepository.findByUsername(user.getUsername()) == null;
             boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
             Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
@@ -333,7 +333,7 @@ public class UserController {
         return diff > 17;
     }
 
-    //neither
+    /*/neither
     @PostMapping({"/loginAfterProcess"})
     public void login_submit(User user, HttpServletResponse response) throws IOException {
         System.out.println("here");
@@ -350,13 +350,14 @@ public class UserController {
         }
         else {
             response.sendRedirect("/login");
-        }*/
-    }
+        }
+        response.sendRedirect("/user");
+    }*/
 
     @GetMapping({"/login-error"})
-    public String loginError(HttpServletRequest request, Model model)
+    public void loginError(HttpServletResponse response)//HttpServletRequest request, Model model)
     {
-        HttpSession session = request.getSession(false);
+       /* HttpSession session = request.getSession(false);
         String errorM = null;
         if(session != null)
         {
@@ -367,15 +368,21 @@ public class UserController {
             }
         }
         model.addAttribute("errorM",errorM);
-        return "errorLogin.html";
+        return "errorLogin.html";*/
+        loginError = true;
+        try {
+            response.sendRedirect("/login");
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //user
     @PostMapping({"/forum/question"})
-    public void ask_question(String title, String question, HttpServletResponse response) throws IOException {
+    public void ask_question(String title, String question, HttpServletResponse response, Authentication authentication) throws IOException {
         String name = "Anonymous User";
-        if(isLoggedIn())
-            name  = userRepository.findById(currentUserID).getFirstName();
+        if(getCurrentAccountType(authentication)!=0)
+            name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
 
         Question newQuestion = new Question(title, question, name);
         questionRepository.save(newQuestion);
@@ -384,10 +391,10 @@ public class UserController {
 
     //admin
     @PostMapping({"/forum/answer"})
-    public void answer_question(String answer, long questionId, HttpServletResponse response) throws IOException {
-        if(isLoggedIn() && isAdmin())
+    public void answer_question(String answer, long questionId, HttpServletResponse response, Authentication authentication) throws IOException {
+        if(getCurrentAccountType(authentication)==1)
         {
-            String name  = userRepository.findById(currentUserID).getFirstName();
+            String name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
             Question question = questionRepository.findById(questionId);
             Answer newAnswer = new Answer(answer, name, question);
             question.setAnswer(newAnswer);
@@ -401,31 +408,35 @@ public class UserController {
 
     //not admin
     @PostMapping({"/book"})
-    public void book_submit(String date, long centreId, HttpServletResponse response) throws IOException {
-        if(isLoggedIn() && !isAdmin() && getUser().canBook()){
-            User user = getUser();
-            Centre centre = centreRepository.getById(centreId);
-            if (appointmentRepository.findByAppointmentDateTimeAndCentre(date, centre).isEmpty()) {
-                boolean firstDose = user.getAppointments().isEmpty();
-                Appointment appointment = new Appointment(date, firstDose, user, centre);
-                user.getAppointments().add(appointment);
-                centre.getAppointments().add(appointment);
-                appointmentRepository.save(appointment);
-                userRepository.save(user);
-                centreRepository.save(centre);
-                response.sendRedirect("/user");
-            } else {
-                response.sendRedirect("/book");
+    public void book_submit(String date, long centreId, HttpServletResponse response, Authentication authentication) throws IOException {
+        String redirect = "/";
+        if(getCurrentAccountType(authentication) == 2)
+        {
+            User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
+            if(user.canBook()) {
+
+                Centre centre = centreRepository.getById(centreId);
+                if (appointmentRepository.findByAppointmentDateTimeAndCentre(date, centre).isEmpty()) {
+                    boolean firstDose = user.getAppointments().isEmpty();
+                    Appointment appointment = new Appointment(date, firstDose, user, centre);
+                    user.getAppointments().add(appointment);
+                    centre.getAppointments().add(appointment);
+                    appointmentRepository.save(appointment);
+                    userRepository.save(user);
+                    centreRepository.save(centre);
+                    redirect="/user";
+                } else {
+                    redirect="/book";
+                }
             }
         }
-        else
-            response.sendRedirect("/");
+        response.sendRedirect(redirect);
     }
 
     //admin
     @PostMapping({"/apply-dose"})
-    public void applyDose(String vaccine, long appointmentId, HttpServletResponse response) throws IOException {
-        if(isLoggedIn() && isAdmin()) {
+    public void applyDose(String vaccine, long appointmentId, HttpServletResponse response, Authentication authentication) throws IOException {
+        if(getCurrentAccountType(authentication) == 1) {
             Appointment appointment = appointmentRepository.getById(appointmentId);
             appointment.setVaccineType(vaccine);
             appointment.setReceived(true);
@@ -448,15 +459,28 @@ public class UserController {
         return new Appointment(date, false, oldAppointment.getUser(), oldAppointment.getCentre());
     }
 
-    public boolean isLoggedIn(){
-        return userRepository.findById(currentUserID) != null;
-    }
 
-    public boolean isAdmin() {
-        return userRepository.findById(currentUserID).getAuthority().equals("ADMIN");
-    }
-
-    private User getUser(){
-        return userRepository.findById(currentUserID);
+    /*
+    0 === not logged in
+    1 === logged in as admin
+    2 === logged in as user
+     */
+    private int getCurrentAccountType(Authentication authentication)
+    {
+        /*if(!(authentication instanceof AnonymousAuthenticationToken))
+        {
+            if(authentication.getAuthorities().stream().anyMatch(grantedAuth -> grantedAuth.getAuthority().equals("ADMIN")))
+                return 1;
+            else
+                return 2;
+        }*/
+        if(authentication != null)
+        {
+            if(authentication.getAuthorities().stream().anyMatch(grantedAuth -> grantedAuth.getAuthority().equals("ADMIN")))
+                return 1;
+            else
+                return 2;
+        }
+        return 0;
     }
 }
