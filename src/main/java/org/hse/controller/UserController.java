@@ -1,20 +1,15 @@
 package org.hse.controller;
 
-import org.apache.catalina.startup.ClassLoaderFactory.Repository;
-import org.hibernate.dialect.function.AvgWithArgumentCastFunction;
 import org.hse.model.*;
 import org.hse.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +19,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 
 @Controller
@@ -301,13 +295,13 @@ public class UserController {
     public void signup_submit(User user, HttpServletResponse response) throws IOException, ParseException {
         String redirect = "/";
         if(!isLoggedIn()) {
-            boolean emailNotExists = userRepository.findByEmail(user.getEmail()).isEmpty();
+            boolean usernameNotExists = userRepository.findByUsername(user.getUsername()) == null;
             boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
             Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
             boolean ageRequirement = isOver18(d);
 
-            if(!emailNotExists || !ppsNotExists || !ageRequirement){
-                if(!emailNotExists){
+            if(!usernameNotExists || !ppsNotExists || !ageRequirement){
+                if(!usernameNotExists){
                     error += "That Email already belongs to an account,     ";
                     redirect = "/signup";
                 }
@@ -322,8 +316,9 @@ public class UserController {
             }
             else {
                 user.setAuthority("USER");
-                currentUserID = userRepository.save(user).getId();
-                redirect = "/user";
+                //currentUserID = userRepository.save(new User(user.getFirstName(),user.getSurname(),user.getDob(), user.getPpsn(), user.getAddress(),user.getPhoneNumber(),user.getEmail(), user.getNationality(), new BCryptPasswordEncoder().encode(user.getPassword()), user.getAuthority(), user.getMale())).getId();
+                userRepository.save(new User(user.getFirstName(),user.getSurname(),user.getDob(), user.getPpsn(), user.getAddress(),user.getPhoneNumber(),user.getUsername(), user.getNationality(), new BCryptPasswordEncoder().encode(user.getPassword()), user.getAuthority(), user.getMale()));
+                redirect = "/login";
             }
         }
         response.sendRedirect(redirect);
@@ -342,9 +337,9 @@ public class UserController {
     @PostMapping({"/loginAfterProcess"})
     public void login_submit(User user, HttpServletResponse response) throws IOException {
         System.out.println("here");
-        List<User> userList = userRepository.findByEmail(user.getEmail());
-        if(!userList.isEmpty()){
-            if(userList.get(0).getPassword().equals(user.getPassword())) {
+        /*User user1 = userRepository.findByUsername(user.getUsername());
+        if(user1 != null){
+            if(user1.getPassword().equals(user.getPassword())) {
                 System.out.println("here2");
                 currentUserID = userList.get(0).getId();
                 response.sendRedirect("/");
@@ -355,7 +350,7 @@ public class UserController {
         }
         else {
             response.sendRedirect("/login");
-        }
+        }*/
     }
 
     @GetMapping({"/login-error"})

@@ -1,18 +1,14 @@
 package org.hse.model;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import java.util.concurrent.TimeUnit;
-import java.util.*;
-import java.text.SimpleDateFormat;
 
-@Entity
-@Table(name = "user_table")
-public class User
-{
+public class UserDto extends User{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -36,7 +32,7 @@ public class User
     private String phoneNumber;
 
     @Column
-    private String username;
+    private String email;
 
     @Column
     private String nationality;
@@ -56,7 +52,7 @@ public class User
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Appointment> appointments = new ArrayList<>();
 
-    public User(){
+    public UserDto(){
         super();
     }
 
@@ -64,25 +60,25 @@ public class User
                 @NotBlank String ppsn, @NotBlank String address, @NotBlank String phoneNumber, @NotBlank String email,
                 @NotBlank String nationality)*/
 
-    public User(String authority) {
+    public UserDto(String authority) {
         this.authority = authority;
         this.enabled = 1;
     }
 
-    public User(String username, String password) {
-        this.username = username;
+    public UserDto(String email, String password) {
+        this.email = email;
         this.password = password;
         this.enabled = 1;
     }
 
-    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String username, String nationality, String password, String authority, String male){
+    public UserDto(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, String authority, String male){
         this.firstName = firstName;
         this.surname = surname;
         this.dob = dob;
         this.ppsn = ppsn;
         this.address = address;
         this.phoneNumber = phoneNumber;
-        this.username = username;
+        this.email = email;
         this.nationality = nationality;
         this.password = password;
         this.enabled = 1;
@@ -154,11 +150,11 @@ public class User
     }
 
     public String getUsername() {
-        return username;
+        return email;
     }
 
     public void setUsername(String username) {
-        this.username = username;
+        this.email = username;
     }
 
     public String getNationality() {
