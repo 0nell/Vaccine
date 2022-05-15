@@ -44,10 +44,13 @@ public class User
     private String nationality;
 
     @Column
-    private UserType userType;
+    private String authority;
 
     @Column
     private String male;
+
+
+    private int enabled;
 
     @Column
     private String password;
@@ -63,16 +66,18 @@ public class User
                 @NotBlank String ppsn, @NotBlank String address, @NotBlank String phoneNumber, @NotBlank String email,
                 @NotBlank String nationality)*/
 
-    public User(UserType userType) {
-        this.userType = userType;
+    public User(String authority) {
+        this.authority = authority;
+        this.enabled = 1;
     }
 
     public User(String email, String password) {
         this.email = email;
         this.password = password;
+        this.enabled = 1;
     }
 
-    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, UserType userType, String male){
+    public User(String firstName,String surname,String dob, String ppsn, String address,String phoneNumber,String email, String nationality, String password, String authority, String male){
         this.firstName = firstName;
         this.surname = surname;
         this.dob = dob;
@@ -82,7 +87,8 @@ public class User
         this.email = email;
         this.nationality = nationality;
         this.password = password;
-        this.userType = userType;
+        this.enabled = 1;
+        this.authority = authority;
         this.male = male;
     }
 
@@ -133,6 +139,13 @@ public class User
     public void setAddress(String address) {
         this.address = address;
     }
+    public int getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(int enabled) {
+        this.enabled = enabled;
+    }
 
     public String getPhoneNumber() {
         return phoneNumber;
@@ -174,12 +187,12 @@ public class User
         this.password = password;
     }
 
-    public UserType getUserType() {
-        return userType;
+    public String getAuthority() {
+        return  authority;
     }
 
-    public void setUserType(UserType userType) {
-        this.userType = userType;
+    public void setAuthority(String authority) {
+        this.authority = authority;
     }
 
     public boolean vaccinated(){

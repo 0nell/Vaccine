@@ -1,5 +1,7 @@
 package org.hse.security;
 
+
+import org.hse.model.UserType;
 import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -11,37 +13,54 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    String[] adminAccessPaths= {"/admin","/logout","/forum/answer","/apply-dose"};
+    String[] userAccessPaths= {"/user","/book","/logout","cancel-appointment"};
+    //String[] allAccessPaths= {"/","/home","/signup","/login","/stats","/forum","/forum/question","/error"};
+
     @Autowired
-    UserRepository userRepository;
+    DataSource dataSource;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-
-        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        auth
-                .inMemoryAuthentication()
-                .withUser("user")
-                .password(encoder.encode("password"))
-                .roles("USER")
-                .and()
-                .withUser("admin")
-                .password(encoder.encode("admin"))
-                .roles("USER", "ADMIN");
+        auth.jdbcAuthentication()
+                .dataSource(dataSource)
+                .passwordEncoder(passwordEncoder())
+                .usersByUsernameQuery("select email,password,enabled from user_table where email=?")
+                .authoritiesByUsernameQuery("select email,authority from user_table where email=?");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .anyRequest()
-                .authenticated()
+                    .antMatchers(adminAccessPaths).hasAuthority("ADMIN")
+                    .antMatchers(userAccessPaths).hasAuthority("USER")
+                    .anyRequest().permitAll()
                 .and()
-                .httpBasic();
+                .formLogin()
+                    .loginPage("/login")
+                    .permitAll()
+                    .defaultSuccessUrl("/home",true)
+                     .failureUrl("/login-error")
+                //.successHandler(NEW SUCCESS HANDLER?)
+                .and()
+                    .logout()
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/login")
+                    // .logoutSuccessHandler(logoutSuccessHandler)                              4
+                   //  .invalidateHttpSession(true)                                             5
+                   //  .addLogoutHandler(logoutHandler)                                         6
+                    //.deleteCookies(cookieNamesToClear)
+                .and()
+                .csrf().disable();
     }
 
     @Bean

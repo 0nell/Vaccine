@@ -8,12 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,13 +42,16 @@ public class UserController {
     @Autowired
     AppointmentRepository appointmentRepository;
 
+    private BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
+
+
     private long currentUserID = -1;
 
     @EventListener(ApplicationReadyEvent.class)
     public void initialiseDatabaseValues() {
         if(userRepository.count() == 0)
         {
-            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,"iamadmin",UserType.ADMIN,"true"));
+            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,encoder.encode("iamadmin"),"ADMIN","true"));
         }
         if(centreRepository.count() == 0)
         {
@@ -117,6 +126,7 @@ public class UserController {
        response.sendRedirect("/");
     }
 
+    //neither
     @RequestMapping({"/login"})
     public String login(HttpServletResponse response)
     {
@@ -130,6 +140,7 @@ public class UserController {
         return "login.html";
     }
 
+    //either
     @RequestMapping({"/stats"})
     public String stats(Model model)
     {
@@ -142,7 +153,7 @@ public class UserController {
         int fullVaccine = 0;
 
         for(User user : userRepository.findAll()) {
-            if(user.getUserType() == UserType.USER && user.firstDose()) {       //user has had a vaccination
+            if(user.getAuthority().equals("USER") && user.firstDose()) {       //user has had a vaccination
                 userCount++;
                 countries.add(user.getNationality());
                 if(user.isMale()){maleCount++;}
@@ -200,6 +211,7 @@ public class UserController {
         return "stats.html";
     }
 
+    //either
     @RequestMapping({"/forum"})
     public String forum(Model model)
     {
@@ -207,7 +219,7 @@ public class UserController {
         model.addAttribute("answered", questionRepository.findByAnswerIsNotNull());
         boolean admin = false;
         if (isLoggedIn())
-            admin = userRepository.findById(currentUserID).getUserType() == UserType.ADMIN;
+            admin = userRepository.findById(currentUserID).getAuthority().equals("ADMIN");
         model.addAttribute("isAdmin", admin);
         return "forum.html";
     }
@@ -223,6 +235,7 @@ public class UserController {
         return "admin.html";
     }
 
+    //user
     @RequestMapping({"/cancel-appointment"})
     public void cancel(HttpServletResponse response) throws IOException {
         User user = userRepository.getById(currentUserID);
@@ -236,6 +249,8 @@ public class UserController {
         }
         response.sendRedirect("/");
     }
+
+    //user
     @RequestMapping({"/user"})
     public String user(Model model, HttpServletResponse response) throws IOException {
         if(!isLoggedIn()) {
@@ -281,6 +296,7 @@ public class UserController {
         }
     }
 
+    //neither
     @PostMapping({"/signup"})
     public void signup_submit(User user, HttpServletResponse response) throws IOException, ParseException {
         String redirect = "/";
@@ -305,7 +321,7 @@ public class UserController {
                 }
             }
             else {
-                user.setUserType(UserType.USER);
+                user.setAuthority("USER");
                 currentUserID = userRepository.save(user).getId();
                 redirect = "/user";
             }
@@ -322,11 +338,14 @@ public class UserController {
         return diff > 17;
     }
 
-    @PostMapping({"/login"})
+    //neither
+    @PostMapping({"/loginAfterProcess"})
     public void login_submit(User user, HttpServletResponse response) throws IOException {
+        System.out.println("here");
         List<User> userList = userRepository.findByEmail(user.getEmail());
         if(!userList.isEmpty()){
             if(userList.get(0).getPassword().equals(user.getPassword())) {
+                System.out.println("here2");
                 currentUserID = userList.get(0).getId();
                 response.sendRedirect("/");
             }
@@ -339,6 +358,24 @@ public class UserController {
         }
     }
 
+    @GetMapping({"/login-error"})
+    public String loginError(HttpServletRequest request, Model model)
+    {
+        HttpSession session = request.getSession(false);
+        String errorM = null;
+        if(session != null)
+        {
+            AuthenticationException ex = (AuthenticationException) session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+            if(ex != null)
+            {
+                errorM = ex.getMessage();
+            }
+        }
+        model.addAttribute("errorM",errorM);
+        return "errorLogin.html";
+    }
+
+    //user
     @PostMapping({"/forum/question"})
     public void ask_question(String title, String question, HttpServletResponse response) throws IOException {
         String name = "Anonymous User";
@@ -350,6 +387,7 @@ public class UserController {
         response.sendRedirect("/forum");
     }
 
+    //admin
     @PostMapping({"/forum/answer"})
     public void answer_question(String answer, long questionId, HttpServletResponse response) throws IOException {
         if(isLoggedIn() && isAdmin())
@@ -366,6 +404,7 @@ public class UserController {
             response.sendRedirect("/forum");
     }
 
+    //not admin
     @PostMapping({"/book"})
     public void book_submit(String date, long centreId, HttpServletResponse response) throws IOException {
         if(isLoggedIn() && !isAdmin() && getUser().canBook()){
@@ -388,6 +427,7 @@ public class UserController {
             response.sendRedirect("/");
     }
 
+    //admin
     @PostMapping({"/apply-dose"})
     public void applyDose(String vaccine, long appointmentId, HttpServletResponse response) throws IOException {
         if(isLoggedIn() && isAdmin()) {
@@ -418,7 +458,7 @@ public class UserController {
     }
 
     public boolean isAdmin() {
-        return userRepository.findById(currentUserID).getUserType() == UserType.ADMIN;
+        return userRepository.findById(currentUserID).getAuthority().equals("ADMIN");
     }
 
     private User getUser(){
