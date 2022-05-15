@@ -60,7 +60,8 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
                    //  .addLogoutHandler(logoutHandler)                                         6
                     //.deleteCookies(cookieNamesToClear)
                 .and()
-                .csrf().disable();
+                .csrf().disable()
+        ;
     }
 
     @Bean
