@@ -3,7 +3,7 @@ package org.hse.model;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "question_table")
+@Table(name = "questions")
 public class Question {
 
     @Id

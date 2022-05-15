@@ -10,7 +10,7 @@ import java.util.*;
 import java.text.SimpleDateFormat;
 
 @Entity
-@Table(name = "user_table")
+@Table(name = "users")
 public class User
 {
     @Id
