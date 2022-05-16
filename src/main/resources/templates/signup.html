@@ -47,7 +47,7 @@
             </div>
             <div class="u-form-date u-form-group u-form-group-3">
               <label for="date-e6cd" class="u-label">Date</label>
-              <input type="date" placeholder="MM/DD/YYYY" id="date-e6cd" name="dob" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required="">
+              <input type="date" th:max="${max}" placeholder="MM/DD/YYYY" id="date-e6cd" name="dob" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required="">
             </div>
             <div class="u-form-email u-form-group">
               <label for="email-4295" class="u-label">Email</label>
@@ -325,7 +325,12 @@
             </div>
             <div class="u-form-group u-form-group-9">
               <label for="text-306b" class="u-label">Password</label>
-              <input type="password" placeholder="Enter your Password" id="text-306b" name="password" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white">
+              <input  type="password" pattern="((?=.*[a-z])(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%!]).{8,32})" placeholder="Enter your Password" id="text-306b" name="password" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" title="At least 1 Upper-Case Letter
+At least 1 Lower-Case Letter
+At least 1 Upper-Case Letter
+At least 1 Number
+At least 1 Special Character
+Between 8-32 Characters">
             </div>
             <div class="u-align-left u-form-group u-form-submit">
               <input type="submit" value="submit" class="u-btn u-btn-submit u-button-style">
