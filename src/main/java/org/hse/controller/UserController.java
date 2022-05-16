@@ -301,15 +301,17 @@ public class UserController {
     public void signup_submit(UserDto userDto, HttpServletResponse response, Authentication authentication, BindingResult bindingResult) throws IOException, ParseException {
         String redirect = "/";
 
-
+        User userPersist = new User(userDto.getFirstName(),userDto.getSurname(),userDto.getDob(), userDto.getPpsn(), userDto.getAddress(),userDto.getPhoneNumber(),userDto.getUsername(), userDto.getNationality(), userDto.getPassword(), userDto.getAuthority(), userDto.getMale());
         if(getCurrentAccountType(authentication)==0) {
-            userValidator.validate(user,bindingResult);
+            userValidator.validate(userPersist,bindingResult);
+
             if (bindingResult.hasErrors()) {
                 redirect = "/signup";
             }
             else{
-                user.setAuthority("USER");
-                userRepository.save(new User(user.getFirstName(),user.getSurname(),user.getDob(), user.getPpsn(), user.getAddress(),user.getPhoneNumber(),user.getUsername(), user.getNationality(), new BCryptPasswordEncoder().encode(user.getPassword()), user.getAuthority(), user.getMale()));
+                userPersist.setAuthority("USER");
+                userPersist.setPassword(new BCryptPasswordEncoder().encode(userDto.getPassword()));
+                userRepository.save(userPersist);
                 redirect = "/login";
             }
             /*
