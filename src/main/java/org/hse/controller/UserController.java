@@ -2,6 +2,7 @@ package org.hse.controller;
 
 import org.hse.model.*;
 import org.hse.repository.*;
+import org.hse.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +41,8 @@ public class UserController {
     CentreRepository centreRepository;
     @Autowired
     AppointmentRepository appointmentRepository;
+    @Autowired
+    private UserValidator userValidator;
 
     private BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
 
@@ -104,6 +108,7 @@ public class UserController {
 
     @RequestMapping({"/signup"})
     public String signup(HttpServletResponse response, Model model, Authentication authentication){
+        String max = String.valueOf(java.time.LocalDate.now().minusYears(18));
         if(getCurrentAccountType(authentication) != 0){
             try {
                 response.sendRedirect("/");
@@ -112,6 +117,7 @@ public class UserController {
             }
         }
         model.addAttribute("error", error);
+        model.addAttribute("max", max);
         error = "";
         return "signup.html";
     }
@@ -292,13 +298,26 @@ public class UserController {
 
     //neither
     @PostMapping({"/signup"})
-    public void signup_submit(UserDto userDto, HttpServletResponse response, Authentication authentication) throws IOException, ParseException {
+    public void signup_submit(UserDto userDto, HttpServletResponse response, Authentication authentication, BindingResult bindingResult) throws IOException, ParseException {
         String redirect = "/";
+
+
         if(getCurrentAccountType(authentication)==0) {
-            boolean usernameNotExists = userRepository.findByUsername(userDto.getUsername()) == null;
-            boolean ppsNotExists = userRepository.findByPpsn(userDto.getPpsn()).isEmpty();
-            Date d = new SimpleDateFormat("yyyy-MM-dd").parse(userDto.getDob());
+            userValidator.validate(user,bindingResult);
+            if (bindingResult.hasErrors()) {
+                redirect = "/signup";
+            }
+            else{
+                user.setAuthority("USER");
+                userRepository.save(new User(user.getFirstName(),user.getSurname(),user.getDob(), user.getPpsn(), user.getAddress(),user.getPhoneNumber(),user.getUsername(), user.getNationality(), new BCryptPasswordEncoder().encode(user.getPassword()), user.getAuthority(), user.getMale()));
+                redirect = "/login";
+            }
+            /*
+            boolean usernameNotExists = userRepository.findByUsername(user.getUsername()) == null;
+            boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
+            Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
             boolean ageRequirement = isOver18(d);
+
 
             if(!usernameNotExists || !ppsNotExists || !ageRequirement){
                 if(!usernameNotExists){
@@ -318,7 +337,7 @@ public class UserController {
                 userDto.setAuthority("USER");
                 userRepository.save(new User(userDto.getFirstName(),userDto.getSurname(),userDto.getDob(), userDto.getPpsn(), userDto.getAddress(),userDto.getPhoneNumber(),userDto.getUsername(), userDto.getNationality(), new BCryptPasswordEncoder().encode(userDto.getPassword()), userDto.getAuthority(), userDto.getMale()));
                 redirect = "/login";
-            }
+            }*/
         }
         response.sendRedirect(redirect);
     }
