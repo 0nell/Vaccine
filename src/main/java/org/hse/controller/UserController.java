@@ -292,12 +292,12 @@ public class UserController {
 
     //neither
     @PostMapping({"/signup"})
-    public void signup_submit(User user, HttpServletResponse response, Authentication authentication) throws IOException, ParseException {
+    public void signup_submit(UserDto userDto, HttpServletResponse response, Authentication authentication) throws IOException, ParseException {
         String redirect = "/";
         if(getCurrentAccountType(authentication)==0) {
-            boolean usernameNotExists = userRepository.findByUsername(user.getUsername()) == null;
-            boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
-            Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
+            boolean usernameNotExists = userRepository.findByUsername(userDto.getUsername()) == null;
+            boolean ppsNotExists = userRepository.findByPpsn(userDto.getPpsn()).isEmpty();
+            Date d = new SimpleDateFormat("yyyy-MM-dd").parse(userDto.getDob());
             boolean ageRequirement = isOver18(d);
 
             if(!usernameNotExists || !ppsNotExists || !ageRequirement){
@@ -315,9 +315,8 @@ public class UserController {
                 }
             }
             else {
-                user.setAuthority("USER");
-                //currentUserID = userRepository.save(new User(user.getFirstName(),user.getSurname(),user.getDob(), user.getPpsn(), user.getAddress(),user.getPhoneNumber(),user.getEmail(), user.getNationality(), new BCryptPasswordEncoder().encode(user.getPassword()), user.getAuthority(), user.getMale())).getId();
-                userRepository.save(new User(user.getFirstName(),user.getSurname(),user.getDob(), user.getPpsn(), user.getAddress(),user.getPhoneNumber(),user.getUsername(), user.getNationality(), new BCryptPasswordEncoder().encode(user.getPassword()), user.getAuthority(), user.getMale()));
+                userDto.setAuthority("USER");
+                userRepository.save(new User(userDto.getFirstName(),userDto.getSurname(),userDto.getDob(), userDto.getPpsn(), userDto.getAddress(),userDto.getPhoneNumber(),userDto.getUsername(), userDto.getNationality(), new BCryptPasswordEncoder().encode(userDto.getPassword()), userDto.getAuthority(), userDto.getMale()));
                 redirect = "/login";
             }
         }
@@ -383,7 +382,7 @@ public class UserController {
         String name = "Anonymous User";
         if(getCurrentAccountType(authentication)!=0)
             name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
-
+        question = question.replaceAll("[><=]+","");
         Question newQuestion = new Question(title, question, name);
         questionRepository.save(newQuestion);
         response.sendRedirect("/forum");

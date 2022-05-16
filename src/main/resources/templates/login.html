@@ -46,6 +46,7 @@
               <label for="password-a30d" class="u-label">Password *</label>
               <input maxlength="50" type="password" placeholder="Enter your Password" id="password-a30d" name="password" class="u-border-grey-30 u-input u-input-rectangle u-input-2" required="">
             </div>
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="u-align-left u-form-group u-form-submit">
 <!--              <a href="#" class="u-btn u-btn-submit u-button-style u-btn-1">Login</a>-->
               <input type="submit" value="login" class="u-btn u-btn-submit u-button-style u-btn-1">

@@ -48,7 +48,10 @@
             </div>
             <div class="u-container-style u-list-item u-repeater-item">
               <div class="u-container-layout u-similar-container u-container-layout-3">
-                <a href="/logout" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-3" style="background-color:#1e453e;">Log out<br>
+                <form action="/logout" method="POST">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="submit" value="Log Out" class="u-align-center u-border-none u-btn u-button-style u-grey-90 u-btn-3" style="background-color:#1e453e;">
+                </form>
                 </a>
               </div>
             </div>
@@ -125,6 +128,7 @@
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" version="1" class="u-caret"><path fill="currentColor" d="M4 8L0 4h8z"></path></svg>
                         </div>
                       </div>
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                       <input  type="hidden"  name="appointmentId" th:value="${appointment.id}">
                       <div class="u-align-center u-form-group u-form-submit">
                         <input type="submit" value="Apply Dose" class="u-btn u-btn-submit u-button-style">

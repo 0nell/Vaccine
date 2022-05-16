@@ -46,8 +46,11 @@
                       <h1 class="u-text u-text-default u-text-1"> User Profile</h1>
                       <h2 class="u-custom-font u-text u-text-3">Last Activity</h2>
                       <p class="u-text u-text-4" <span th:text="${lastActivity}"></span></p>
-                      <a href="/logout" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-3-light-1 u-radius-50 u-text-white u-btn-2">Log Out</a>
-                    </div>
+                      <form action="/logout" method="POST">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="submit" value="Log Out" class="u-border-none u-btn u-btn-round u-button-style u-hover-palette-3-light-3 u-palette-3-light-1 u-radius-50 u-text-white u-btn-2">
+                      </form>
+                      </div>
                   </div>
                 </div>
               </div>

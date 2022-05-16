@@ -22,8 +22,7 @@ import javax.sql.DataSource;
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     String[] adminAccessPaths= {"/admin","/logout","/forum/answer","/apply-dose"};
-    String[] userAccessPaths= {"/user","/book","/logout","cancel-appointment"};
-    //String[] allAccessPaths= {"/","/home","/signup","/login","/stats","/forum","/forum/question","/error"};
+    String[] userAccessPaths= {"/user","/book","/logout","/cancel-appointment"};
 
     @Autowired
     DataSource dataSource;
@@ -60,8 +59,14 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
                    //  .addLogoutHandler(logoutHandler)                                         6
                     //.deleteCookies(cookieNamesToClear)
                 .and()
-                .csrf().disable()
-        ;
+                    .headers()
+                    .frameOptions()
+                    .deny()
+                .and()
+                .headers()
+                .xssProtection()
+                .and()
+                .contentSecurityPolicy("script-src 'self'");
     }
 
     @Bean
