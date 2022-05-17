@@ -3,23 +3,25 @@ package org.hse.controller;
 import org.hse.model.*;
 import org.hse.repository.*;
 import org.hse.validator.UserValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,8 +30,8 @@ import java.util.concurrent.TimeUnit;
 
 @Controller
 public class UserController {
+    private Logger logger = LoggerFactory.getLogger(UserController.class);
     String error = "";
-    private boolean loginError = false;
 
     @Autowired
     UserRepository userRepository;
@@ -50,7 +52,7 @@ public class UserController {
     public void initialiseDatabaseValues() {
         if(userRepository.count() == 0)
         {
-            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,encoder.encode("iamadmin"),"ADMIN","true"));
+            userRepository.save(new User("Skete"," "," "," "," "," ","admin@admin.ie"," ",encoder.encode("iamadmin"),"ADMIN","true"));
         }
         if(centreRepository.count() == 0)
         {
@@ -60,11 +62,11 @@ public class UserController {
             centreRepository.save(new Centre("HSE clinic West","1 Lucan road","84738294"));
             centreRepository.save(new Centre("HSE clinic Central","1 Connolly Street","84738295"));
         }
+        logger.info("Application Database populated");
     }
 
     @RequestMapping({"/", "/home"})
     public String index(HttpServletResponse response, Authentication authentication) throws ParseException, IOException {
-        loginError = false;
         int currentUserType = getCurrentAccountType(authentication);
         if(currentUserType == 1)
             response.sendRedirect("/admin");
@@ -78,6 +80,7 @@ public class UserController {
         int currentUserType = getCurrentAccountType(authentication);
         if(currentUserType != 2){
             response.sendRedirect("/");
+            logger.warn("Attempted booking by non user");
         }
         model.addAttribute("centres", centreRepository.findAll());
         List<List<String>> dates = new ArrayList<>();
@@ -97,7 +100,8 @@ public class UserController {
                 cal.add(Calendar.DATE, 365);
                 max = sdf.format(cal.getTime());
             } catch (ParseException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                logger.error("Booking-error retrieving valid second appointment time");
             }
         }
         model.addAttribute("min", min);
@@ -113,7 +117,8 @@ public class UserController {
             try {
                 response.sendRedirect("/");
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                logger.warn("Redirect failure: Authenticated account attempting to access signup page");
             }
         }
         model.addAttribute("error", error);
@@ -122,24 +127,32 @@ public class UserController {
         return "signup.html";
     }
 
-   /* @RequestMapping({"/logout"})
-    public void logout(HttpServletResponse response) throws IOException {
-       currentUserID = -1;
-       response.sendRedirect("/");
-    }*/
+    @RequestMapping({"/logoutComplete"})
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final String xfHeader = request.getHeader("X-Forwarded-For");
+        String ip = (xfHeader == null) ?request.getRemoteAddr():xfHeader.split(",")[0];
+
+        logger.info("Successful Logout from IP: {"+ip+"}");
+        response.sendRedirect("/login");
+    }
 
     //neither
     @RequestMapping({"/login"})
-    public String login(HttpServletResponse response,Authentication authentication, Model model)
+    public String login(HttpServletResponse response,Authentication authentication, Model model, HttpServletRequest request)
     {
         if(getCurrentAccountType(authentication) != 0){
             try {
                 response.sendRedirect("/");
             } catch (IOException e) {
-                e.printStackTrace();
+               // e.printStackTrace();
+                logger.warn("Redirect failure: Authenticated account attempting to access login page");
             }
         }
-        model.addAttribute("isError",loginError);
+        Map<String, ?> inputFlashMap = RequestContextUtils.getInputFlashMap(request);
+        if (inputFlashMap != null) {
+            String error = (String) inputFlashMap.get("error");
+            model.addAttribute("error", error);
+        }
         return "login.html";
     }
 
@@ -228,9 +241,11 @@ public class UserController {
     @RequestMapping({"/admin"})
     public String admin(Model model, HttpServletResponse response,Authentication authentication) throws IOException {
         if(getCurrentAccountType(authentication) != 1) {
+            logger.warn("Attempted viewing of admin login page by non verified user");
             response.sendRedirect("/");
         }
         else {
+            logger.info("Admin Landing page Accessed by {"+((UserDetails)authentication.getPrincipal()).getUsername()+"}");
             model.addAttribute("appointments", appointmentRepository.findAll());
         }
         return "admin.html";
@@ -240,7 +255,8 @@ public class UserController {
     @RequestMapping({"/cancel-appointment"})
     public void cancel(HttpServletResponse response,Authentication authentication) throws IOException {
         if(getCurrentAccountType(authentication) == 2) {
-            User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
+            String username = ((UserDetails)authentication.getPrincipal()).getUsername();
+            User user = userRepository.findByUsername(username);
             if (!user.getAppointments().isEmpty()) {
                 Appointment apt = user.getAppointments().remove(user.getAppointments().size()-1);
                 appointmentRepository.delete(apt);
@@ -248,8 +264,13 @@ public class UserController {
                 centre.getAppointments().remove(apt);
                 centreRepository.save(centre);
                 userRepository.save(user);
+                logger.info("Appointment cancelled for user {"+username+"}");
             }
+            else
+                logger.warn("Attempted appointment cancellation by user with no appointment {"+username+"}");
         }
+        else
+            logger.warn("Attempted appointment cancellation by non user");
         response.sendRedirect("/");
     }
 
@@ -258,6 +279,7 @@ public class UserController {
     public String userLanding(Model model, HttpServletResponse response,Authentication authentication) throws IOException {
         if(getCurrentAccountType(authentication) != 2) {
             response.sendRedirect("/");
+            logger.warn("Attempted user landing page access by non user ");
         }
         User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
         List<Appointment> userAppointments = user.getAppointments();
@@ -292,7 +314,7 @@ public class UserController {
 
         model.addAttribute("lastActivity", lastActivity);
         model.addAttribute("bookMessage", bookMessage);
-
+        logger.info("User Landing page accessed: {"+user.getUsername()+"}");
         return "User-Profile.html";
     }
 
@@ -306,6 +328,7 @@ public class UserController {
             userValidator.validate(userPersist,bindingResult);
 
             if (bindingResult.hasErrors()) {
+                logger.warn("Potential Man in Middle attack altering signup user details or email already in use");
                 redirect = "/signup";
             }
             else{
@@ -313,33 +336,8 @@ public class UserController {
                 userPersist.setPassword(new BCryptPasswordEncoder().encode(userDto.getPassword()));
                 userRepository.save(userPersist);
                 redirect = "/login";
+                logger.info("New user created {"+userPersist.getUsername()+"}");
             }
-            /*
-            boolean usernameNotExists = userRepository.findByUsername(user.getUsername()) == null;
-            boolean ppsNotExists = userRepository.findByPpsn(user.getPpsn()).isEmpty();
-            Date d = new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob());
-            boolean ageRequirement = isOver18(d);
-
-
-            if(!usernameNotExists || !ppsNotExists || !ageRequirement){
-                if(!usernameNotExists){
-                    error += "That Email already belongs to an account,     ";
-                    redirect = "/signup";
-                }
-                if (!ppsNotExists){
-                    error += "That PPS already belongs to an account,   ";
-                    redirect = "/signup";
-                }
-                if(!ageRequirement){
-                    error += "\nYou cannot register if you are under 18";
-                    redirect = "/signup";
-                }
-            }
-            else {
-                userDto.setAuthority("USER");
-                userRepository.save(new User(userDto.getFirstName(),userDto.getSurname(),userDto.getDob(), userDto.getPpsn(), userDto.getAddress(),userDto.getPhoneNumber(),userDto.getUsername(), userDto.getNationality(), new BCryptPasswordEncoder().encode(userDto.getPassword()), userDto.getAuthority(), userDto.getMale()));
-                redirect = "/login";
-            }*/
         }
         response.sendRedirect(redirect);
     }
@@ -353,48 +351,18 @@ public class UserController {
         return diff > 17;
     }
 
-    /*/neither
-    @PostMapping({"/loginAfterProcess"})
-    public void login_submit(User user, HttpServletResponse response) throws IOException {
-        System.out.println("here");
-        /*User user1 = userRepository.findByUsername(user.getUsername());
-        if(user1 != null){
-            if(user1.getPassword().equals(user.getPassword())) {
-                System.out.println("here2");
-                currentUserID = userList.get(0).getId();
-                response.sendRedirect("/");
-            }
-            else {
-                response.sendRedirect("/login");
-            }
-        }
-        else {
-            response.sendRedirect("/login");
-        }
-        response.sendRedirect("/user");
-    }*/
-
-    @GetMapping({"/login-error"})
-    public void loginError(HttpServletResponse response)//HttpServletRequest request, Model model)
+    @GetMapping({"/login-uperror"})
+    public String loginError(HttpServletResponse response, RedirectAttributes redirectAttrs)//HttpServletRequest request, Model model)
     {
-       /* HttpSession session = request.getSession(false);
-        String errorM = null;
-        if(session != null)
-        {
-            AuthenticationException ex = (AuthenticationException) session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-            if(ex != null)
-            {
-                errorM = ex.getMessage();
-            }
-        }
-        model.addAttribute("errorM",errorM);
-        return "errorLogin.html";*/
-        loginError = true;
-        try {
-            response.sendRedirect("/login");
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
+        redirectAttrs.addFlashAttribute("error","Invalid Username or Password");
+        return "redirect:/login";
+    }
+
+    @GetMapping({"/login-blockerror"})
+    public String loginError1(HttpServletResponse response, RedirectAttributes redirectAttrs)//HttpServletRequest request, Model model)
+    {
+        redirectAttrs.addFlashAttribute("error","IP blocked due to too many login attempts");
+        return "redirect:/login";
     }
 
     private boolean validateLength(String actual, int maxLength) {
@@ -414,6 +382,12 @@ public class UserController {
             Question newQuestion = new Question(title, question, name);
             questionRepository.save(newQuestion);
         }
+        if(getCurrentAccountType(authentication)!=0)
+            name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
+        question = question.replaceAll("[><=]+",""); //minor xss script filter
+        Question newQuestion = new Question(title, question, name);
+        questionRepository.save(newQuestion);
+        logger.info("New Question posted in forum by {"+name+"}");
         response.sendRedirect("/forum");
     }
 
@@ -432,6 +406,24 @@ public class UserController {
             }
         }
         response.sendRedirect("/forum");
+        if(getCurrentAccountType(authentication)==1)
+        {
+            String name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
+            Question question = questionRepository.findById(questionId);
+            answer = answer.replaceAll("[><=]+",""); //minor xss script filter
+            Answer newAnswer = new Answer(answer, name, question);
+            question.setAnswer(newAnswer);
+            answerRepository.save(newAnswer);
+            questionRepository.save(question);
+            logger.info("Question ("+questionId+") answered by admin {"+name+"}");
+            response.sendRedirect("/forum");
+        }
+        else
+        {
+            logger.warn("Attempted answer of question by unauthorised user");
+            response.sendRedirect("/forum");
+        }
+
     }
 
     private Boolean dateCompare(String min, String max, String date) {
@@ -471,6 +463,32 @@ public class UserController {
                 }
         }
         else{redirect="/error-page";}
+        if(getCurrentAccountType(authentication) == 2)
+        {
+            User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
+            if(user.canBook()) {
+
+                Centre centre = centreRepository.getById(centreId);
+                if (appointmentRepository.findByAppointmentDateTimeAndCentre(date, centre).isEmpty()) {
+                    boolean firstDose = user.getAppointments().isEmpty();
+                    Appointment appointment = new Appointment(date, firstDose, user, centre);
+                    user.getAppointments().add(appointment);
+                    centre.getAppointments().add(appointment);
+                    appointmentRepository.save(appointment);
+                    userRepository.save(user);
+                    centreRepository.save(centre);
+                    logger.info("Booked new appointment for user {"+user.getUsername()+"} at centre ("+centreId+")");
+                    redirect="/user";
+                } else {
+                    logger.warn("Attempted booking of invalid appointment time at a centre");
+                    redirect="/book";
+                }
+            }
+            else
+                logger.warn("Attempted booking by user who has had 2 appointments");
+        }
+        else
+            logger.warn("Attempted booking by non user");
         response.sendRedirect(redirect);
     }
 
@@ -482,13 +500,18 @@ public class UserController {
             appointment.setVaccineType(vaccine);
             appointment.setReceived(true);
             appointmentRepository.save(appointment);
+            logger.info("Admin {"+((UserDetails)authentication.getPrincipal()).getUsername()+"} applied dose for appointment ("+appointmentId+")");
             if (appointment.isFirstDose()) {
                 appointmentRepository.save(getSecondAppointment(appointment));
+                logger.info("Second appointment booked for user {"+appointment.getUser().getUsername()+"}");
             }
             response.sendRedirect("/admin");
         }
         else
+        {
+            logger.warn("Attempted dose application for appoinment ("+appointmentId+") by non admin");
             response.sendRedirect("/");
+        }
     }
 
     public Appointment getSecondAppointment(Appointment oldAppointment){
@@ -524,4 +547,6 @@ public class UserController {
         }
         return 0;
     }
+
+
 }

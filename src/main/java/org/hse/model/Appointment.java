@@ -114,7 +114,5 @@ public class Appointment {
             setVaccineType(VaccineType.PFIZER);
         else if(type.equals("Moderna"))
             setVaccineType(VaccineType.MODERNA);
-        else
-            System.out.println("Something went wrong");
     }
 }

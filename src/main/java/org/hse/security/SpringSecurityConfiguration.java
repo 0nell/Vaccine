@@ -5,7 +5,9 @@ import org.hse.filter.JWTAuthenticationFilter;
 import org.hse.filter.JWTAuthorizationFilter;
 import org.hse.model.UserType;
 import org.hse.repository.UserRepository;
+import org.hse.service.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -14,13 +16,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 import javax.sql.DataSource;
 import static org.hse.filter.SecurityConstants.COOKIE_NAME;
@@ -35,13 +37,19 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     DataSource dataSource;
 
+    @Autowired
+    @Qualifier("userDetailsService")
+    MyUserDetailsService myUserDetailsService;
+
+    @Autowired
+    private CustomAuthenticationFailureHandler authenticationFailureHandler;
+
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(myUserDetailsService).passwordEncoder(passwordEncoder());
+    }
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication()
-                .dataSource(dataSource)
-                .passwordEncoder(passwordEncoder())
-                .usersByUsernameQuery("select username,password,enabled from users where username=?")
-                .authoritiesByUsernameQuery("select username,authority from users where username=?");
+        auth.userDetailsService(myUserDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Override
@@ -63,6 +71,7 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .permitAll()
                     .defaultSuccessUrl("/home",true)
                     .failureUrl("/login-error")
+                    .failureHandler(authenticationFailureHandler)
                 //.successHandler(NEW SUCCESS HANDLER?)
                 .and()
                     .logout()
@@ -71,14 +80,18 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .invalidateHttpSession(true) 
                     .deleteCookies(COOKIE_NAME)
                     .and()
-                    //.addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                    //.addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                    .addFilter(new JWTAuthenticationFilter(authenticationManager()))
+                    .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                    .logout()
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/logoutComplete")
+                .and()
                     .headers()
                     .frameOptions()
                     .deny()
                 .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 .and()
                 .headers()
                 .xssProtection()
