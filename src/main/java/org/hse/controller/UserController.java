@@ -1,6 +1,5 @@
 package org.hse.controller;
 
-import org.apache.logging.log4j.LogManager;
 import org.hse.model.*;
 import org.hse.repository.*;
 import org.hse.validator.UserValidator;
@@ -9,22 +8,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,7 +52,7 @@ public class UserController {
     public void initialiseDatabaseValues() {
         if(userRepository.count() == 0)
         {
-            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,encoder.encode("iamadmin"),"ADMIN","true"));
+            userRepository.save(new User("Skete"," "," "," "," "," ","admin@admin.ie"," ",encoder.encode("iamadmin"),"ADMIN","true"));
         }
         if(centreRepository.count() == 0)
         {
@@ -492,4 +489,6 @@ public class UserController {
         }
         return 0;
     }
+
+
 }

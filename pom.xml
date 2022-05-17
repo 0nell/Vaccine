@@ -7,7 +7,7 @@
     <artifactId>vaccineRegistry</artifactId>
     <version>0.0.2</version>
     <name>vaccineRegistry</name>
-    <description>Book Project</description>
+    <description>Vaccine Project</description>
 
     <properties>
         <main.class>org.hse.VaccineApplication</main.class>
@@ -83,7 +83,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -132,7 +136,6 @@
             <artifactId>android-json</artifactId>
             <version>0.0.20131108.vaadin1</version>
         </dependency>
-
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
@@ -144,9 +147,9 @@
             <version>1.4.1</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -155,7 +158,6 @@
         </dependency>
 
     </dependencies>
-
 
     <build>
         <finalName>${project.artifactId}</finalName>
