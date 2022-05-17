@@ -22,10 +22,8 @@ public class AuthenticationFailureListener implements
         final String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader == null) {
             loginAttemptService.loginFailed(request.getRemoteAddr());
-            System.out.println("hello1");
         } else {
             loginAttemptService.loginFailed(xfHeader.split(",")[0]);
-            System.out.println("hello2");
         }
     }
 }

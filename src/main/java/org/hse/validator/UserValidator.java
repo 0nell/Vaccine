@@ -111,7 +111,6 @@ public class UserValidator implements Validator {
 
         cal.add(Calendar.YEAR, -18);
         Date date = cal.getTime();
-        System.out.println(new SimpleDateFormat("dd/MM/yyyy").format(date));
 
         return date.getTime() > dob.getTime();
     }

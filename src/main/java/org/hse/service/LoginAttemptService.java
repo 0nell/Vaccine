@@ -45,7 +45,6 @@ public class LoginAttemptService {
         attempts++;
         if(attempts>=MAX_ATTEMPT)
             logger.warn("Too Many UnSuccessful logins from IP: {"+key+"}, IP BLOCKED");
-        System.out.println(key + ", " + attempts);
         attemptsCache.put(key, attempts);
     }
 
