@@ -245,4 +245,8 @@ public class User
     public void setMale(String male) {
         this.male = male;
     }
+
+    public boolean isEnabled() {
+        return enabled == 1;
+    }
 }
