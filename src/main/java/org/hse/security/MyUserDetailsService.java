@@ -1,5 +1,7 @@
 package org.hse.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,6 +22,8 @@ public class MyUserDetailsService implements UserDetailsService {
     @Autowired
     private LoginAttemptService loginAttemptService;
 
+    private Logger logger = LoggerFactory.getLogger(MyUserDetailsService.class);
+
     @Autowired
     private HttpServletRequest request;
 
@@ -34,6 +38,7 @@ public class MyUserDetailsService implements UserDetailsService {
         if (loginAttemptService.isBlocked(ip)) {
             throw new RuntimeException("blocked");
         }
+        logger.info("Login attempt for account {"+email+"} from IP: {"+ip+"}");
         jdbc.setDataSource(dataSource);
         jdbc.setUsersByUsernameQuery("select username,password,enabled from users where username=?");
         jdbc.setAuthoritiesByUsernameQuery("select username,authority from users where username=?");
