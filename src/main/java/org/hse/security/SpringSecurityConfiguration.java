@@ -59,12 +59,12 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .loginPage("/login")
                     .permitAll()
                     .defaultSuccessUrl("/home",true)
-                    .failureUrl("/login-error")
+                    .failureUrl("/login-uperror")
                 //.successHandler(NEW SUCCESS HANDLER?)
                 .and()
                     .logout()
                     .logoutUrl("/logout")
-                    .logoutSuccessUrl("/login")
+                    .logoutSuccessUrl("/logoutComplete")
                     // .logoutSuccessHandler(logoutSuccessHandler)                              4
                    //  .invalidateHttpSession(true)                                             5
                    //  .addLogoutHandler(logoutHandler)                                         6
@@ -74,8 +74,8 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .frameOptions()
                     .deny()
                 .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 .and()
                 .headers()
                 .xssProtection()

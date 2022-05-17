@@ -32,8 +32,7 @@
           <img src="images/hse-logo.png" class="u-logo-image u-logo-image-1">
         </a>
     <section class="u-clearfix u-custom-color-3 u-section-1" id="sec-1bf2">
-        <div th:if="${isError}" class="u-align-center u-small-text u-text u-text-variant u-text-1" style="background-color: #E57373; font-size: 20px; padding:20px; border-radius:10px;background-radius:10px;margin-top:20px;">
-            Invalid username or password
+        <div th:if="${error}" th:text="${error}" class="u-align-center u-small-text u-text u-text-variant u-text-1" style="background-color: #E57373; font-size: 20px; padding:20px; border-radius:10px;background-radius:10px;margin-top:20px;">
         </div>
         <div class="u-clearfix u-sheet u-sheet-1">
         <div class="u-align-center u-form u-login-control u-form-1">
