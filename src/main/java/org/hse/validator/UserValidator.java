@@ -1,20 +1,18 @@
 package org.hse.validator;
 
 
-import org.hse.repository.UserRepository;
-import org.hse.model.User;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.hse.model.User;
+import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +21,7 @@ public class UserValidator implements Validator {
 
 
 
-
+    private final int MAX_LENGTH = 32;
     private final String NAME_REGEX = "([A-Z][a-z]*).{1,32}";
     private final String PPS_REGEX = "[0-9]{7}([A-Z]|[a-z]){1,2}";
 
@@ -56,7 +54,7 @@ public class UserValidator implements Validator {
         User user = (User) o;
 
         if(isUserInValid(user))
-            errors.rejectValue("first_name", "Too Long");
+            errors.rejectValue("name", "Too Long");
 
         if(!isEmailValid(user.getUsername()))
             errors.rejectValue("email", "InvalidEmail");
@@ -98,12 +96,13 @@ public class UserValidator implements Validator {
 
     private boolean isEmailValid(String email) {
 
-        return EmailValidator.getInstance().isValid(email);
+        return EmailValidator.getInstance().isValid(email) && email.length() <= MAX_LENGTH;
     }
 
     private boolean isUserInValid(User user){
-        return (user.getAddress().length() > 250 || user.getFirstName().length() > 250 ||
-                user.getSurname().length() > 250 ||(user.getNationality().length() > 250));
+        return (user.getAddress().length() > MAX_LENGTH || user.getFirstName().length() > MAX_LENGTH ||
+                user.getSurname().length() > MAX_LENGTH ||(user.getNationality().length() > MAX_LENGTH)
+                ||(user.getPhoneNumber().length() > MAX_LENGTH));
     }
 
 

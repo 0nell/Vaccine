@@ -1,4 +1,4 @@
-package org.hse.security;
+package org.hse.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.Collections;
 
 
 @Service("userDetailsService")
@@ -40,8 +38,8 @@ public class MyUserDetailsService implements UserDetailsService {
         }
         logger.info("Login attempt for account {"+email+"} from IP: {"+ip+"}");
         jdbc.setDataSource(dataSource);
-        jdbc.setUsersByUsernameQuery("select username,password,enabled from users where username=?");
-        jdbc.setAuthoritiesByUsernameQuery("select username,authority from users where username=?");
+        jdbc.setUsersByUsernameQuery("select aes_decrypt(from_base64(username), 'pls-dont-reveal1'),aes_decrypt(from_base64(password), 'pls-dont-reveal1'),enabled from users where username=to_base64(aes_encrypt(?, 'pls-dont-reveal1'))");
+        jdbc.setAuthoritiesByUsernameQuery("select aes_decrypt(from_base64(username), 'pls-dont-reveal1'),aes_decrypt(from_base64(authority), 'pls-dont-reveal1') from users where username=to_base64(aes_encrypt(?, 'pls-dont-reveal1'))");
         return jdbc.loadUserByUsername(email);
     }
 
