@@ -1,6 +1,8 @@
 package org.hse.security;
 
 
+import org.hse.filter.JWTAuthenticationFilter;
+import org.hse.filter.JWTAuthorizationFilter;
 import org.hse.model.UserType;
 import org.hse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +17,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 import javax.sql.DataSource;
+import static org.hse.filter.SecurityConstants.COOKIE_NAME;
 
 @Configuration
 @EnableWebSecurity
@@ -39,27 +46,33 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
+        http.cors().disable()
+                .authorizeRequests()
+                    .antMatchers("/css/**","/images/**").permitAll()
+                .and()
                 .authorizeRequests()
                     .antMatchers(adminAccessPaths).hasAuthority("ADMIN")
                     .antMatchers(userAccessPaths).hasAuthority("USER")
-                    .anyRequest().permitAll()
+                .and()
+                    .authorizeRequests()
+                    .antMatchers("/user","/book","logout","cancel-appointment","admin","/forum/answer","/apply-dose").permitAll()
+                    .anyRequest().authenticated()
                 .and()
                 .formLogin()
                     .loginPage("/login")
                     .permitAll()
                     .defaultSuccessUrl("/home",true)
-                     .failureUrl("/login-error")
+                    .failureUrl("/login-error")
                 //.successHandler(NEW SUCCESS HANDLER?)
                 .and()
                     .logout()
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/login")
-                    // .logoutSuccessHandler(logoutSuccessHandler)                              4
-                   //  .invalidateHttpSession(true)                                             5
-                   //  .addLogoutHandler(logoutHandler)                                         6
-                    //.deleteCookies(cookieNamesToClear)
-                .and()
+                    .invalidateHttpSession(true) 
+                    .deleteCookies(COOKIE_NAME)
+                    .and()
+                    //.addFilter(new JWTAuthenticationFilter(authenticationManager()))
+                    //.addFilter(new JWTAuthorizationFilter(authenticationManager()))
                     .headers()
                     .frameOptions()
                     .deny()
@@ -76,5 +89,14 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        configuration.setAllowedOrigins(Arrays.asList("localhost"));
+        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        return source;
     }
 }

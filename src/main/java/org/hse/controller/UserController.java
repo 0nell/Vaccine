@@ -397,59 +397,80 @@ public class UserController {
         }
     }
 
+    private boolean validateLength(String actual, int maxLength) {
+        return (actual.isEmpty() || actual.length() > maxLength);
+    }
+
     //user
     @PostMapping({"/forum/question"})
     public void ask_question(String title, String question, HttpServletResponse response, Authentication authentication) throws IOException {
         String name = "Anonymous User";
-        if(getCurrentAccountType(authentication)!=0)
-            name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
-        question = question.replaceAll("[><=]+","");
-        Question newQuestion = new Question(title, question, name);
-        questionRepository.save(newQuestion);
+        if(validateLength(title, 50)){throw new IOException("Title too long");}
+        else if(validateLength(question, 100)){throw new IOException("Question too long");}
+        else {
+            if(getCurrentAccountType(authentication)!=0)
+                name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
+            question = question.replaceAll("[><=]+","");
+            Question newQuestion = new Question(title, question, name);
+            questionRepository.save(newQuestion);
+        }
         response.sendRedirect("/forum");
     }
 
     //admin
     @PostMapping({"/forum/answer"})
     public void answer_question(String answer, long questionId, HttpServletResponse response, Authentication authentication) throws IOException {
-        if(getCurrentAccountType(authentication)==1)
-        {
-            String name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
-            Question question = questionRepository.findById(questionId);
-            Answer newAnswer = new Answer(answer, name, question);
-            question.setAnswer(newAnswer);
-            answerRepository.save(newAnswer);
-            questionRepository.save(question);
-            response.sendRedirect("/forum");
-        }
-        else
-            response.sendRedirect("/forum");
-    }
-
-    //not admin
-    @PostMapping({"/book"})
-    public void book_submit(String date, long centreId, HttpServletResponse response, Authentication authentication) throws IOException {
-        String redirect = "/";
-        if(getCurrentAccountType(authentication) == 2)
-        {
-            User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
-            if(user.canBook()) {
-
-                Centre centre = centreRepository.getById(centreId);
-                if (appointmentRepository.findByAppointmentDateTimeAndCentre(date, centre).isEmpty()) {
-                    boolean firstDose = user.getAppointments().isEmpty();
-                    Appointment appointment = new Appointment(date, firstDose, user, centre);
-                    user.getAppointments().add(appointment);
-                    centre.getAppointments().add(appointment);
-                    appointmentRepository.save(appointment);
-                    userRepository.save(user);
-                    centreRepository.save(centre);
-                    redirect="/user";
-                } else {
-                    redirect="/book";
-                }
+        if(validateLength(answer, 200)){throw new IOException("Answer too long");}
+            else {if(getCurrentAccountType(authentication)==1)
+            {
+                String name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
+                Question question = questionRepository.findById(questionId);
+                Answer newAnswer = new Answer(answer, name, question);
+                question.setAnswer(newAnswer);
+                answerRepository.save(newAnswer);
+                questionRepository.save(question);
             }
         }
+        response.sendRedirect("/forum");
+    }
+
+    private Boolean dateCompare(String min, String max, String date) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date minD, maxD, d;
+        try {
+            minD = format.parse(min);
+            maxD = format.parse(max);
+            d = format.parse(date);
+        } catch (Exception e) {
+            return false;
+        }
+        return ((d.before(minD)) || (maxD.before(d)));
+    }
+    //not admin
+    @PostMapping({"/book"})
+    public void book_submit(String min, String max, String date, long centreId, HttpServletResponse response, Authentication authentication) throws IOException {
+        String redirect = "/";
+        if(!dateCompare(min, max, date) && getCurrentAccountType(authentication) == 2) {
+
+                User user = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername());
+                if(user.canBook()) {
+
+                    Centre centre = centreRepository.getById(centreId);
+                    if (appointmentRepository.findByAppointmentDateTimeAndCentre(date, centre).isEmpty()) {
+                        boolean firstDose = user.getAppointments().isEmpty();
+                        Appointment appointment = new Appointment(date, firstDose, user, centre);
+                        user.getAppointments().add(appointment);
+                        centre.getAppointments().add(appointment);
+                        appointmentRepository.save(appointment);
+                        userRepository.save(user);
+                        centreRepository.save(centre);
+                        redirect="/user";
+                    } else {
+                        redirect="/book";
+                    }
+                }
+        }
+        else{redirect="/error-page";}
         response.sendRedirect(redirect);
     }
 

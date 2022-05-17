@@ -98,7 +98,7 @@
                   <div class="u-form-group u-form-message">
                       <label for="message-6793" class="u-label">Answer</label>
                       <input  type="hidden"  name="questionId" th:value="${question.id}" >
-                      <textarea placeholder="Answer Question" rows="4" cols="50" id="message-6793" name="answer" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required="" maxlength="100"></textarea>
+                      <textarea maxlength="200" placeholder="Answer Question" rows="4" cols="50" id="message-6793" name="answer" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required="" maxlength="100"></textarea>
                   </div>
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <div class="u-align-left u-form-group u-form-submit">
@@ -126,7 +126,7 @@
 
                                       <div class="u-form-group u-form-group-1">
                                           <label for="text-ae9d" class="u-label">Title</label>
-                                          <input type="text" placeholder="Enter Question Title" id="text-ae9d" name="title" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" maxlength="20">
+                                          <input type="text" maxlength="50" placeholder="Enter Question Title" id="text-ae9d" name="title" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" maxlength="20">
                                       </div>
                                       <div class="u-form-group u-form-message">
                                           <label for="message-6793" class="u-label">Question</label>
