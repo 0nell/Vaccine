@@ -374,7 +374,7 @@ public class UserController {
         String name = "Anonymous User";
         if(getCurrentAccountType(authentication)!=0)
             name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
-        question = question.replaceAll("[><=]+","");
+        question = question.replaceAll("[><=]+",""); //minor xss script filter
         Question newQuestion = new Question(title, question, name);
         questionRepository.save(newQuestion);
         logger.info("New Question posted in forum by {"+name+"}");
@@ -388,6 +388,7 @@ public class UserController {
         {
             String name  = userRepository.findByUsername(((UserDetails)authentication.getPrincipal()).getUsername()).getFirstName();
             Question question = questionRepository.findById(questionId);
+            answer = answer.replaceAll("[><=]+",""); //minor xss script filter
             Answer newAnswer = new Answer(answer, name, question);
             question.setAnswer(newAnswer);
             answerRepository.save(newAnswer);

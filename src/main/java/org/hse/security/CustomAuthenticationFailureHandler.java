@@ -1,9 +1,14 @@
 package org.hse.security;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -17,39 +22,13 @@ import java.util.Locale;
 
 @Component("authenticationFailureHandler")
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-
-    @Autowired
-    private MessageSource messages;
-
-    @Autowired
-    private LocaleResolver localeResolver;
+    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
     public void onAuthenticationFailure(final HttpServletRequest request, final HttpServletResponse response, final AuthenticationException exception) throws IOException, ServletException {
-        setDefaultFailureUrl("/login-error");
-        System.out.println("testing1234");
-
-        super.onAuthenticationFailure(request, response, exception);
-
-        final Locale locale = localeResolver.resolveLocale(request);
-
-        String errorMessage = messages.getMessage("message.badCredentials", null, locale);
-
-        if (exception.getMessage()
-                .equalsIgnoreCase("User is disabled")) {
-            errorMessage = messages.getMessage("auth.message.disabled", null, locale);
-        } else if (exception.getMessage()
-                .equalsIgnoreCase("User account has expired")) {
-            errorMessage = messages.getMessage("auth.message.expired", null, locale);
-        } else if (exception.getMessage()
-                .equalsIgnoreCase("blocked")) {
-            errorMessage = messages.getMessage("auth.message.blocked", null, locale);
-        } else if (exception.getMessage()
-                .equalsIgnoreCase("unusual location")) {
-            errorMessage = messages.getMessage("auth.message.unusual.location", null, locale);
-        }
-
-        request.getSession()
-                .setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, errorMessage);
+        if(exception instanceof BadCredentialsException)
+            redirectStrategy.sendRedirect(request,response,"/login-uperror");
+        else //blocked ip
+            redirectStrategy.sendRedirect(request,response,"/login-blockerror");
     }
 }

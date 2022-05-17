@@ -37,7 +37,7 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
     MyUserDetailsService myUserDetailsService;
 
     @Autowired
-    private AuthenticationFailureHandler authenticationFailureHandler;
+    private CustomAuthenticationFailureHandler authenticationFailureHandler;
 
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(myUserDetailsService).passwordEncoder(passwordEncoder());
@@ -59,16 +59,11 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .loginPage("/login")
                     .permitAll()
                     .defaultSuccessUrl("/home",true)
-                    .failureUrl("/login-uperror")
-                //.successHandler(NEW SUCCESS HANDLER?)
+                    .failureHandler(authenticationFailureHandler)
                 .and()
                     .logout()
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/logoutComplete")
-                    // .logoutSuccessHandler(logoutSuccessHandler)                              4
-                   //  .invalidateHttpSession(true)                                             5
-                   //  .addLogoutHandler(logoutHandler)                                         6
-                    //.deleteCookies(cookieNamesToClear)
                 .and()
                     .headers()
                     .frameOptions()
