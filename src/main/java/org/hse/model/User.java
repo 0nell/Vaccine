@@ -1,5 +1,8 @@
 package org.hse.model;
 
+import org.hibernate.annotations.ColumnTransformer;
+import org.hse.security.AttributeEncryptor;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,39 +20,48 @@ public class User
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String ppsn;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String firstName;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String surname;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String dob;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String address;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String phoneNumber;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String username;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String nationality;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String authority;
 
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String male;
 
-
     private int enabled;
-
+    @Convert(converter = AttributeEncryptor.class)
     @Column
     private String password;
 

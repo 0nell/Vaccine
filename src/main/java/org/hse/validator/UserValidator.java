@@ -25,6 +25,7 @@ public class UserValidator implements Validator {
 
 
     private final String NAME_REGEX = "([A-Z][a-z]*).{1,32}";
+    private final String PPS_REGEX = "[0-9]{7}([A-Z]|[a-z]){1,2}";
 
     //private final String LAST_NAME_REGEX = "(^[\\p{L}\\s.’\\-,]+$).{2,32}";
 
@@ -54,6 +55,8 @@ public class UserValidator implements Validator {
     public void validate(Object o, Errors errors) {
         User user = (User) o;
 
+        if(isUserInValid(user))
+            errors.rejectValue("first_name", "Too Long");
 
         if(!isEmailValid(user.getUsername()))
             errors.rejectValue("email", "InvalidEmail");
@@ -62,16 +65,19 @@ public class UserValidator implements Validator {
             if(!isOver18(new SimpleDateFormat("yyyy-MM-dd").parse(user.getDob())))
                 errors.rejectValue("DOB", "Too Young");
         } catch (ParseException e) {
-            e.printStackTrace();
+            errors.rejectValue("DOB", "Invalid");
         }
 
+        if(!isValid(user.getPpsn(), PPS_REGEX))
+            errors.rejectValue("ppsn", "Invalid PPS");
 
         //ValidationUtils.rejectIfEmptyOrWhitespace(errors, "username", "NotEmpty");
 
-        if (    (userRepository.findByUsername(user.getUsername()) != null) ||
-                (!isValid(user.getPassword(), PASSWORD_REGEX))
-        )
-            errors.rejectValue("password", "Invalid Password");
+        if (!isValid(user.getPassword(), PASSWORD_REGEX))
+            errors.rejectValue("password", "Invalid Email or Password");
+
+        if(userRepository.findByUsername(user.getUsername()) != null)
+            errors.rejectValue("username", "Invalid Email or Password");
     }
 
     public void validatePassword(String password, Errors errors){
@@ -95,18 +101,20 @@ public class UserValidator implements Validator {
         return EmailValidator.getInstance().isValid(email);
     }
 
-    private boolean isUserValid(String username){
-        return username.matches("^[a-z0-9_-]{6,32}$");
+    private boolean isUserInValid(User user){
+        return (user.getAddress().length() > 250 || user.getFirstName().length() > 250 ||
+                user.getSurname().length() > 250 ||(user.getNationality().length() > 250));
     }
 
 
-    public boolean isOver18(Date dob){
-        Date today = Calendar.getInstance().getTime();
-        long d1 = TimeUnit.DAYS.convert(today.getTime(), TimeUnit.MILLISECONDS);
-        long d2 = TimeUnit.DAYS.convert(dob.getTime(), TimeUnit.MILLISECONDS);
-        long diff = d1 - d2;
-        diff = diff/360;
-        return diff > 17;
+    private boolean isOver18(Date dob){
+        Calendar cal = Calendar.getInstance();
+
+        cal.add(Calendar.YEAR, -18);
+        Date date = cal.getTime();
+        System.out.println(new SimpleDateFormat("dd/MM/yyyy").format(date));
+
+        return date.getTime() > dob.getTime();
     }
 
 

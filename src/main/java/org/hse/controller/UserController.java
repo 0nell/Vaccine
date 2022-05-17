@@ -50,7 +50,7 @@ public class UserController {
     public void initialiseDatabaseValues() {
         if(userRepository.count() == 0)
         {
-            userRepository.save(new User("Skete",null,null,null,null,null,"admin@admin.ie",null,encoder.encode("iamadmin"),"ADMIN","true"));
+            userRepository.save(new User("Skete"," "," "," "," "," ","admin@admin.ie"," ",encoder.encode("iamadmin"),"ADMIN","true"));
         }
         if(centreRepository.count() == 0)
         {
@@ -306,6 +306,7 @@ public class UserController {
             userValidator.validate(userPersist,bindingResult);
 
             if (bindingResult.hasErrors()) {
+                error="Email already in use probably";
                 redirect = "/signup";
             }
             else{
@@ -503,4 +504,6 @@ public class UserController {
         }
         return 0;
     }
+
+
 }
